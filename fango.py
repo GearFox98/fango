@@ -70,7 +70,7 @@ class pomodoro_timer:
 
         return pomodoro
 
-def swtich_loop():
+def switch_loop():
     LOOPING = not LOOPING
 
 async def notify(message):
@@ -80,7 +80,7 @@ async def notify(message):
                                        buttons=[
                                            Button(
                                                title="Stop",
-                                               on_pressed=swtich_loop)
+                                               on_pressed=switch_loop)
                                             ]
                                         )
 
