@@ -1,10 +1,11 @@
 import os, time, json, logging, asyncio
 from enum import Enum
-from desktop_notifier import DesktopNotifier
+from desktop_notifier import DesktopNotifier, Button
 
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
 CONFIG = "./config.json"
 NOTIFIER = DesktopNotifier(app_name="Fango", app_icon="assets/fango.png")
+LOOPING = True
 
 class MODES(Enum):
     WORKING = 0,
@@ -69,8 +70,19 @@ class pomodoro_timer:
 
         return pomodoro
 
+def swtich_loop():
+    LOOPING = not LOOPING
+
 async def notify(message):
-    notification = await NOTIFIER.send(title="Fango", message=message, sound=True)
+    notification = await NOTIFIER.send(title="Fango",
+                                       message=message,
+                                       sound=True,
+                                       buttons=[
+                                           Button(
+                                               title="Stop",
+                                               on_pressed=swtich_loop)
+                                            ]
+                                        )
 
     await asyncio.sleep(5)
 
@@ -118,8 +130,10 @@ async def counting(pomodoro: pomodoro_timer, counting: int = 1) -> int:
 # Main loop
 async def main():
     pomodoro = pomodoro_timer()
-    
-    await counting(pomodoro)
-    pomodoro.add_loop()
+
+    while LOOPING:
+        loop = pomodoro.get_loop()
+        await counting(pomodoro, loop)
+        pomodoro.add_loop()
 
 asyncio.run(main())
