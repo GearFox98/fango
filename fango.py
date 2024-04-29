@@ -39,8 +39,13 @@ class pomodoro_timer:
                 self.loop = temp['loop']
             logging.info("Pomodoro config loaded")
     
-    def set_loop(self, loop):
+    def set_loop(self, loop: int):
         self.loop = loop
+    
+    def add_loop(self):
+        self.loop += 1
+        if self.loop == 9:
+            self.loop = 1
 
     def get_wtime(self) -> int:
         return self.work_time
@@ -75,7 +80,7 @@ async def notify(message):
 # Chrono
 async def counting(pomodoro: pomodoro_timer, counting: int = 1) -> int:
     # Reset counter
-    if counting == 5:
+    if counting == 9:
         counting = 1
     
     if counting % 8 == 0:
@@ -115,5 +120,6 @@ async def main():
     pomodoro = pomodoro_timer()
     
     await counting(pomodoro)
+    pomodoro.add_loop()
 
 asyncio.run(main())
