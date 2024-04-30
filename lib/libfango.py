@@ -1,4 +1,4 @@
-import os, time, json, asyncio
+import os, time, json, flet
 from enum import Enum
 
 CONFIG = str(os.path.expanduser('~/.fango/config.json'))
@@ -67,8 +67,8 @@ class pomodoro_timer:
 
         return pomodoro
 
-# Chrono
-async def counting(pomodoro: pomodoro_timer, loop: int = 1) -> tuple:
+# Counter
+def counting(pomodoro: pomodoro_timer, data: dict = None, loop: int = 1) -> tuple:
     # Reset counter
     if loop == 9:
         loop = 1
@@ -82,6 +82,9 @@ async def counting(pomodoro: pomodoro_timer, loop: int = 1) -> tuple:
     else:
         mode = MODES.WORKING
         current_timer = pomodoro.get_wtime()
+    
+    if not data == None:
+        data['mode'] = mode
 
     seconds = current_timer * 60
 
@@ -89,6 +92,8 @@ async def counting(pomodoro: pomodoro_timer, loop: int = 1) -> tuple:
         mins, sec = divmod(seconds, 60)
         timer = '{:02d}:{:02d}'.format(mins, sec)
         print(timer, end='\r')
+        if not data == None:
+            data['clock'] = timer
         time.sleep(1)
         seconds -= 1
     
@@ -100,13 +105,3 @@ async def counting(pomodoro: pomodoro_timer, loop: int = 1) -> tuple:
     else:
         # "Terminó el tiempo de trabajo"
         return (MODES.WORKING, current_timer)
-
-# Main
-async def main():
-    pomodoro = pomodoro_timer()
-
-    loop = pomodoro.get_loop()
-    await counting(pomodoro, loop)
-
-if __name__ == "__main__":
-    asyncio.run(main())
