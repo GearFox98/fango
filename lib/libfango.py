@@ -1,4 +1,4 @@
-import os, time, json, flet
+import os, json
 from enum import Enum
 
 CONFIG = str(os.path.expanduser('~/.fango/config.json'))
@@ -30,8 +30,9 @@ class pomodoro_timer:
                 self.long_free_time = temp['long_free']
                 self.loop = temp['loop']
     
-    def set_loop(self, loop: int):
+    def reset_loop(self, loop: int):
         self.loop = loop
+        self.dump_config()
     
     def add_loop(self):
         self.loop += 1
@@ -67,8 +68,8 @@ class pomodoro_timer:
 
         return pomodoro
 
-# Counter
-def counting(pomodoro: pomodoro_timer, data: dict = None, loop: int = 1) -> tuple:
+# Get Data
+def get_data(pomodoro: pomodoro_timer, loop: int = 1) -> dict:
     # Reset counter
     if loop == 9:
         loop = 1
@@ -83,25 +84,10 @@ def counting(pomodoro: pomodoro_timer, data: dict = None, loop: int = 1) -> tupl
         mode = MODES.WORKING
         current_timer = pomodoro.get_wtime()
     
-    if not data == None:
-        data['mode'] = mode
+    data = {
+        'current_timer' : current_timer,
+        'mode' : mode,
+        'loop' : loop
+    }
 
-    seconds = current_timer * 60
-
-    while seconds:
-        mins, sec = divmod(seconds, 60)
-        timer = '{:02d}:{:02d}'.format(mins, sec)
-        print(timer, end='\r')
-        if not data == None:
-            data['clock'] = timer
-        time.sleep(1)
-        seconds -= 1
-    
-    pomodoro.add_loop()
-
-    if mode == MODES.FREE:
-        # "Terminó el tiempo de descanso de {current_timer} minutos"
-        return (MODES.FREE, current_timer)
-    else:
-        # "Terminó el tiempo de trabajo"
-        return (MODES.WORKING, current_timer)
+    return data
