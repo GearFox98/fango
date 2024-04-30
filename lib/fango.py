@@ -1,11 +1,7 @@
-import os, time, json, logging, asyncio
+import os, time, json, asyncio
 from enum import Enum
-from desktop_notifier import DesktopNotifier, Button
 
-logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
-CONFIG = "./config.json"
-NOTIFIER = DesktopNotifier(app_name="Fango", app_icon="assets/fango.png")
-LOOPING = True
+CONFIG = str(os.path.expanduser('~/.fango/config.json'))
 
 class MODES(Enum):
     WORKING = 0,
@@ -25,12 +21,7 @@ class pomodoro_timer:
             self.long_free_time = long_free_time
             self.loop = loop
 
-            pomodoro = self.get_pomodoro()
-
-            # Dump file
-            with open(CONFIG, mode='w') as conf:
-                json.dump(pomodoro, fp=conf, indent=4)
-            logging.info("Pomodoro config initialized")
+            self.dump_config()
         else: # Load file
             with open(CONFIG, mode='r') as conf:
                 temp = json.load(conf)
@@ -38,7 +29,6 @@ class pomodoro_timer:
                 self.free_time = temp['free']
                 self.long_free_time = temp['long_free']
                 self.loop = temp['loop']
-            logging.info("Pomodoro config loaded")
     
     def set_loop(self, loop: int):
         self.loop = loop
@@ -47,6 +37,13 @@ class pomodoro_timer:
         self.loop += 1
         if self.loop == 9:
             self.loop = 1
+        self.dump_config()
+    
+    def dump_config(self):
+        pomodoro = self.get_pomodoro()
+        # Dump file
+        with open(CONFIG, mode='w') as conf:
+            json.dump(pomodoro, fp=conf, indent=4)
 
     def get_wtime(self) -> int:
         return self.work_time
@@ -70,35 +67,16 @@ class pomodoro_timer:
 
         return pomodoro
 
-def switch_loop():
-    LOOPING = not LOOPING
-
-async def notify(message):
-    notification = await NOTIFIER.send(title="Fango",
-                                       message=message,
-                                       sound=True,
-                                       buttons=[
-                                           Button(
-                                               title="Stop",
-                                               on_pressed=switch_loop)
-                                            ]
-                                        )
-
-    await asyncio.sleep(5)
-
-    await NOTIFIER.clear(notification)
-    await NOTIFIER.clear_all()
-
 # Chrono
-async def counting(pomodoro: pomodoro_timer, counting: int = 1) -> int:
+async def counting(pomodoro: pomodoro_timer, loop: int = 1) -> tuple:
     # Reset counter
-    if counting == 9:
-        counting = 1
+    if loop == 9:
+        loop = 1
     
-    if counting % 8 == 0:
+    if loop % 8 == 0:
         mode = MODES.FREE
         current_timer = pomodoro.get_lftime()
-    elif counting % 2 == 0:
+    elif loop % 2 == 0:
         mode = MODES.FREE
         current_timer = pomodoro.get_ftime()
     else:
@@ -107,11 +85,6 @@ async def counting(pomodoro: pomodoro_timer, counting: int = 1) -> int:
 
     seconds = current_timer * 60
 
-    if mode == MODES.FREE:
-        await notify(f"Comienza descanso de {current_timer} minutos")
-    else:
-        await notify(f"Comienza el tiempo de trabajo")
-
     while seconds:
         mins, sec = divmod(seconds, 60)
         timer = '{:02d}:{:02d}'.format(mins, sec)
@@ -119,21 +92,21 @@ async def counting(pomodoro: pomodoro_timer, counting: int = 1) -> int:
         time.sleep(1)
         seconds -= 1
     
+    pomodoro.add_loop()
+
     if mode == MODES.FREE:
-        await notify(f"Terminó el tiempo de descanso de {current_timer} minutos")
+        # "Terminó el tiempo de descanso de {current_timer} minutos"
+        return (MODES.FREE, current_timer)
     else:
-        await notify("Terminó el tiempo de trabajo")
+        # "Terminó el tiempo de trabajo"
+        return (MODES.WORKING, current_timer)
 
-    counting += 1
-    return counting
-
-# Main loop
+# Main
 async def main():
     pomodoro = pomodoro_timer()
 
-    while LOOPING:
-        loop = pomodoro.get_loop()
-        await counting(pomodoro, loop)
-        pomodoro.add_loop()
+    loop = pomodoro.get_loop()
+    await counting(pomodoro, loop)
 
-asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(main())
