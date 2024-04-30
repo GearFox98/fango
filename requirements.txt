@@ -1,3 +1,6 @@
 dbus-next==0.2.3
 desktop-notifier==3.5.6
 packaging==24.0
+flet==0.22.0
+flet-core==0.22.0
+flet-runtime==0.22.0
