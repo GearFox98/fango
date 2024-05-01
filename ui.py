@@ -1,5 +1,6 @@
+from concurrent import futures
 from concurrent.futures import thread
-from pdb import run
+import dis
 import threading
 import flet as ft
 import asyncio, os, time, asyncio
@@ -41,50 +42,88 @@ async def main(page: ft.Page):
     page.window_maximizable = False
     page.padding = 0
 
-    clock = ft.Text(value='00:00', text_align=ft.TextAlign.CENTER, size=46)
+    clock = ft.Text(value='00:00', text_align=ft.TextAlign.CENTER, size=54)
+    progress = ft.ProgressRing(value=1, width=300, height=300, stroke_width=30, color=ft.colors.BLUE)
+    progress_shadow = ft.ProgressRing(value=1, width=300, height=300, stroke_width=30, color=ft.colors.GREY)
     timer = ft.Container(
-        clock,
-        width=410,
-        height=330,
-        alignment=ft.alignment.center
+        ft.Stack(
+            [
+                ft.Container(
+                    content=progress_shadow,
+                    width=410,
+                    height=330,
+                    alignment=ft.alignment.center
+                ),
+                ft.Container(
+                    content=progress,
+                    width=410,
+                    height=330,
+                    alignment=ft.alignment.center
+                ),
+                ft.Container(
+                    content=clock,
+                    width=410,
+                    height=330,
+                    alignment=ft.alignment.center
+                )
+            ]
+        )
     )
+
+    # Animate progress
+    def anim_progress(start: int, end: int, step: int):
+        for i in range(start, end, step):
+            progress.value = i / 100
+            time.sleep(0.005)
+            page.update()
 
     # Threaded Functions
     breaker = threading.Event()
 
     def pomodoro_timer():
-        pomodoro = libfango.pomodoro_timer()
-        loop = pomodoro.get_loop()
-
-        data = libfango.get_data(pomodoro, loop)
-
-        seconds = data['current_timer'] * 60
         try:
-            while seconds:
-                if breaker.is_set():
-                    raise Exception("Requested halt")
-                mins, sec = divmod(seconds, 60)
-                timer = '{:02d}:{:02d}'.format(mins, sec)
-                print(timer, end='\r')
-                clock.value = timer
-                page.update()
-                time.sleep(1)
-                seconds -= 1
-        
-            pomodoro.add_loop()
+            pomodoro = libfango.pomodoro_timer()
+            pomodoro.reset_loop()
+            while True:
+                loop = pomodoro.get_loop()
 
-            if data['mode'] == libfango.MODES.FREE:
-                asyncio.run(notify(f"Terminó el tiempo de {data['current_timer']} minutos"))
-            else:
-                asyncio.run(notify("Terminó el tiempo de trabajo"))
+                data = libfango.get_data(pomodoro, loop)
+
+                if loop % 2 == 0:
+                    progress.color = ft.colors.GREEN
+                else:
+                    progress.color = ft.colors.BLUE
+
+                seconds = data['current_timer'] * 60
+                t_seconds = seconds
+                while seconds:
+                    if breaker.is_set():
+                        raise Exception("Requested halt")
+                    pc = (t_seconds - seconds) * 100 / t_seconds
+                    mins, sec = divmod(seconds, 60)
+                    timer = '{:02d}:{:02d}'.format(mins, sec)
+                    clock.value = timer
+                    progress.value = pc * 0.01
+                    print(timer, end='\r')
+                    page.update()
+                    time.sleep(1)
+                    seconds -= 1
+            
+                pomodoro.add_loop()
+
+                if data['mode'] == libfango.MODES.FREE:
+                    asyncio.run(notify(f"Terminó el tiempo de {data['current_timer']} minutos"))
+                else:
+                    asyncio.run(notify("Terminó el tiempo de trabajo"))
         except Exception as e:
-            print("Timer stopped")
+            print("\nTimer stopped")
         finally:
             clock.value = "00:00"
-            page.update()
+            anim_progress(int(pc/100), 101, 1)
 
     def set_breaker(_e):
         if data['run'] == False:
+            anim_progress(100, -1, -1)
             breaker.clear()
             data['run'] = True
             main_button.icon = ft.icons.STOP
@@ -115,11 +154,12 @@ async def main(page: ft.Page):
                 )
             ]
         ),
-        width=50
+        width=50,
+        disabled=True
     )
 
     page.appbar = ft.AppBar(
-        title=ft.Text("Fango"),
+        title=ft.Text("Fango", weight=ft.FontWeight.BOLD),
         actions=[
             main_button,
             option_button

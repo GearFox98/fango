@@ -29,22 +29,6 @@ class pomodoro_timer:
                 self.free_time = temp['free']
                 self.long_free_time = temp['long_free']
                 self.loop = temp['loop']
-    
-    def reset_loop(self, loop: int):
-        self.loop = loop
-        self.dump_config()
-    
-    def add_loop(self):
-        self.loop += 1
-        if self.loop == 9:
-            self.loop = 1
-        self.dump_config()
-    
-    def dump_config(self):
-        pomodoro = self.get_pomodoro()
-        # Dump file
-        with open(CONFIG, mode='w') as conf:
-            json.dump(pomodoro, fp=conf, indent=4)
 
     def get_wtime(self) -> int:
         return self.work_time
@@ -67,6 +51,22 @@ class pomodoro_timer:
         }
 
         return pomodoro
+    
+    def dump_config(self):
+        pomodoro = self.get_pomodoro()
+        # Dump file
+        with open(CONFIG, mode='w') as conf:
+            json.dump(pomodoro, fp=conf, indent=4)
+    
+    def reset_loop(self):
+        self.loop = 1
+        self.dump_config()
+    
+    def add_loop(self):
+        self.loop += 1
+        if self.loop == 9:
+            self.loop = 1
+        self.dump_config()
 
 # Get Data
 def get_data(pomodoro: pomodoro_timer, loop: int = 1) -> dict:
