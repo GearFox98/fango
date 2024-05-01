@@ -19,7 +19,8 @@ cd "name_for_the_environment"
 source bin/activate
 ```
 
-Install the dependencies for Fango:
+Copy the Fango repository files to the virtual environment and install the dependencies for Fango
+from its folder:
 
 ```bash
 pip3 install -r requirements.txt
