@@ -16,7 +16,7 @@ data = {
 
 # Notifier
 def notifier(title:str, message: str):
-    icon = os.path.realpath("assets/fango.png")
+    icon = os.path.realpath("assets/icon.png")
     notification.notify(
         app_name=APP_NAME,
         title=title,
