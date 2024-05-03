@@ -5,6 +5,7 @@ hiddenimports = []
 hiddenimports += collect_submodules('flet')
 hiddenimports += collect_submodules('dbus-python')
 hiddenimports += collect_submodules('plyer')
+hiddenimports += collect_submodules('pydub')
 
 
 a = Analysis(
