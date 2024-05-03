@@ -26,7 +26,7 @@ from its folder:
 pip3 install -r requirements.txt
 ```
 
-Now you're able to run Fango, run either "ui.py" or "launch_fango.sh"
+Now you're able to run Fango, run either "fang-o.py" or "launch_fango.sh"
 
 NOTE: launch_fango is intended to activate for you your virtual environment,
 provide the path to the activate script of it before using it.
