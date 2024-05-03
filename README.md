@@ -33,6 +33,7 @@ provide the path to the activate script of it before using it.
 
 ## Dependencies
 - python3
-- dbus-python >= 1.3.2
+- dbus-python >= 1.3.2 (Only on Linux)
 - plyer >= 2.1.0
 - flet >= 0.22.0
+- pydub >= 0.25.1
