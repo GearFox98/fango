@@ -2,6 +2,6 @@ __pycache__
 build
 dist
 api
-fang_o_timer.spec
+fango_timer.spec
 test.py
 run.sh
