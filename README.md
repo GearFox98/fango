@@ -33,5 +33,6 @@ provide the path to the activate script of it before using it.
 
 ## Dependencies
 - python3
-- desktop-notifier >= 3.5.6
+- dbus-python >= 1.3.2
+- plyer >= 2.1.0
 - flet >= 0.22.0

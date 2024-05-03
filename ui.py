@@ -1,9 +1,9 @@
 import threading
 import flet as ft
-import os, time, asyncio
+import os, time
 import lib.libfango as libfango
 
-from desktop_notifier import DesktopNotifier
+from plyer import notification
 from math import pi
 
 data = {
@@ -12,25 +12,16 @@ data = {
     'run' : False
 }
 
-NOTIFIER = DesktopNotifier(app_name="Fango", app_icon="assets/fango.png")
-
 # Notifier
-def notify(message):
-    async def notif(text):
-        notification = await NOTIFIER.send(
-            title="Fango",
-            message=text,
-            sound=True
-        )
-
-        time.sleep(5)
-
-        await NOTIFIER.clear(notification)
-        await NOTIFIER.clear_all()
-    
-    asyncio.run(notif(message))
-
-    print("Notification closed successfully")
+def notifier(title:str, message: str):
+    icon = os.path.realpath("assets/fango.png")
+    notification.notify(
+        app_name="Fang'o timer",
+        title=title,
+        message=message,
+        timeout=5,
+        app_icon=icon
+    )
 
 # Main UI
 async def main(page: ft.Page):
@@ -147,12 +138,10 @@ async def main(page: ft.Page):
                 pomodoro.add_loop()
 
                 if data['mode'] == libfango.MODES.FREE:
-                    #asyncio.run(notify(f"Terminó el tiempo de {data['current_timer']} minutos"))
-                    n = threading.Thread(target=notify, args=[f"Terminó el tiempo de {data['current_timer']} minutos"], daemon=True)
+                    n = threading.Thread(target=notifier, args=["A trabajar", f"Terminó el tiempo de descanso {data['current_timer']} minutos"], daemon=True)
                     n.start()
                 else:
-                    #asyncio.run(notify("Terminó el tiempo de trabajo"))
-                    n = threading.Thread(target=notify, args=[f"Terminó el tiempo de trabajo"], daemon=True)
+                    n = threading.Thread(target=notifier, args=["Tiempo de descansar", f"Terminó el tiempo de trabajo"], daemon=True)
                     n.start()
         except Exception as e:
             print("\nTimer stopped")
@@ -171,8 +160,9 @@ async def main(page: ft.Page):
             data['run'] = True
             main_button.icon = ft.icons.STOP
             main_button.text = "Detener"
-            t = threading.Thread(target=pomodoro_timer, daemon=True)
+            t = threading.Thread(target=pomodoro_timer, daemon=True, name="Timer")
             t.start()
+            print(f"Started thread: {t.name}")
         else:
             data["run"] = False
             main_button.icon = ft.icons.PLAY_ARROW
