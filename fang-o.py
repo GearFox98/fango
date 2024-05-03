@@ -6,6 +6,8 @@ import lib.libfango as libfango
 from plyer import notification
 from math import pi
 
+APP_NAME = "Fang'o timer"
+
 data = {
     'clock' : '00:00',
     'mode' : 0,
@@ -16,7 +18,7 @@ data = {
 def notifier(title:str, message: str):
     icon = os.path.realpath("assets/fango.png")
     notification.notify(
-        app_name="Fang'o timer",
+        app_name=APP_NAME,
         title=title,
         message=message,
         timeout=5,
@@ -25,7 +27,7 @@ def notifier(title:str, message: str):
 
 # Main UI
 async def main(page: ft.Page):
-    page.title = "Fango"
+    page.title = APP_NAME
     page.window_max_height = 400
     page.window_max_width = 415
     page.window_min_height = 400
@@ -100,16 +102,16 @@ async def main(page: ft.Page):
     # Main function
     def pomodoro_timer():
         try:
-            print(breaker.is_set())
             pomodoro = libfango.pomodoro_timer()
             pomodoro.reset_loop()
-            session = 0
-            n = None
+            session = 0 # Session number
+            n = None # Notification thread variable
             while True:
                 loop = pomodoro.get_loop()
 
                 data = libfango.get_data(pomodoro, loop)
 
+                # Gettinf if current loop is a work loop or a free time loop
                 if loop % 2 == 0:
                     progress.color = ft.colors.GREEN
                     mode_label.value = f"Descanso: {data['current_timer']} min."
@@ -122,9 +124,10 @@ async def main(page: ft.Page):
 
                 seconds = data['current_timer'] * 60
                 t_seconds = seconds
+                # Timer
                 while seconds:
                     if breaker.is_set():
-                        raise Exception("Requested halt")
+                        raise Exception("Requested halt") # Thread breaker
                     pc = (t_seconds - seconds) * 100 / t_seconds
                     mins, sec = divmod(seconds, 60)
                     timer = '{:02d}:{:02d}'.format(mins, sec)
@@ -135,8 +138,9 @@ async def main(page: ft.Page):
                     time.sleep(1)
                     seconds -= 1
             
-                pomodoro.add_loop()
+                pomodoro.add_loop() # Update loop in pomodoro object
 
+                # Notification sub threads
                 if data['mode'] == libfango.MODES.FREE:
                     n = threading.Thread(target=notifier, args=["A trabajar", f"Terminó el tiempo de descanso {data['current_timer']} minutos"], daemon=True)
                     n.start()
@@ -144,9 +148,9 @@ async def main(page: ft.Page):
                     n = threading.Thread(target=notifier, args=["Tiempo de descansar", f"Terminó el tiempo de trabajo"], daemon=True)
                     n.start()
         except Exception as e:
-            print("\nTimer stopped")
-            print(e.args)
+            print(f"\nTimer stopped by user: {e.args}")
         finally:
+            # Reset GUI
             if not n == None:
                 n.join()
             clock.value = "00:00"
@@ -194,7 +198,7 @@ async def main(page: ft.Page):
 
     # App menu
     page.appbar = ft.AppBar(
-        title=ft.Text("Fango", weight=ft.FontWeight.BOLD),
+        title=ft.Text(APP_NAME, weight=ft.FontWeight.BOLD),
         actions=[
             main_button,
             option_button
