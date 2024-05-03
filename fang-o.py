@@ -3,10 +3,14 @@ import flet as ft
 import os, time
 import lib.libfango as libfango
 
+from pydub import AudioSegment
+from pydub.playback import play
 from plyer import notification
 from math import pi
 
 APP_NAME = "Fang'o timer"
+ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
+ASSETS_DIR = os.path.join(ROOT_DIR, "assets")
 
 data = {
     'clock' : '00:00',
@@ -16,7 +20,8 @@ data = {
 
 # Notifier
 def notifier(title:str, message: str):
-    icon = os.path.realpath("assets/icon.png")
+    icon = os.path.join(ASSETS_DIR, "icon.png")
+    sound = os.path.join(ASSETS_DIR, "notification.mp3")
     notification.notify(
         app_name=APP_NAME,
         title=title,
@@ -24,6 +29,13 @@ def notifier(title:str, message: str):
         timeout=5,
         app_icon=icon
     )
+
+    notifier_sound = AudioSegment.from_mp3(sound)
+    play(notifier_sound)
+
+# Debugging
+def options(_e):
+    notifier('Testing fango', 'Sound!')
 
 # Main UI
 async def main(page: ft.Page):
@@ -193,6 +205,7 @@ async def main(page: ft.Page):
             ]
         ),
         width=50,
+        on_click=options,
         disabled=True
     )
 
@@ -205,7 +218,7 @@ async def main(page: ft.Page):
         ]
     )
 
-    await page.add_async(timer)
+    page.add(timer)
 
 # Create config folder
 if not os.path.exists(os.path.expanduser("~/.fango")):
