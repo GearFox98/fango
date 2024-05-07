@@ -23,7 +23,7 @@ def notifier(title:str, message: str):
         message=message,
         timeout=5,
         app_icon=icon
-    )
+    ) # type: ignore
 
 # Main UI
 async def main(page: ft.Page):
