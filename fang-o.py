@@ -8,38 +8,21 @@ from pydub.playback import play
 from plyer import notification
 from math import pi
 
-APP_NAME = "Fang'o timer"
-ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
-ASSETS_DIR = os.path.join(ROOT_DIR, "assets")
-
 data = {
     'clock' : '00:00',
     'mode' : 0,
     'run' : False
 }
 
-# Notifier
-def notifier(title:str, message: str):
-    icon = os.path.join(ASSETS_DIR, "icon.png")
-    sound = os.path.join(ASSETS_DIR, "notification.mp3")
-    notification.notify(
-        app_name=APP_NAME,
-        title=title,
-        message=message,
-        timeout=5,
-        app_icon=icon
-    )
-
-    notifier_sound = AudioSegment.from_mp3(sound)
-    play(notifier_sound)
-
 # Debugging
 def options(_e):
-    notifier('Testing fango', 'Sound!')
+    libfango.notifier("It works!", "Sound!")
 
 # Main UI
 async def main(page: ft.Page):
-    page.title = APP_NAME
+    page.title = libfango.APP_NAME
+    page.window_width = 415
+    page.window_height = 415
     page.window_max_height = 400
     page.window_max_width = 415
     page.window_min_height = 400
@@ -108,66 +91,11 @@ async def main(page: ft.Page):
             page.update()
 
     # Threaded Functions
+    # moved to lib/libfango.py
     # To cancel the process
     breaker = threading.Event()
 
     # Main function
-    def pomodoro_timer():
-        try:
-            pomodoro = libfango.pomodoro_timer()
-            pomodoro.reset_loop()
-            session = 0 # Session number
-            n = None # Notification thread variable
-            while True:
-                loop = pomodoro.get_loop()
-
-                data = libfango.get_data(pomodoro, loop)
-
-                # Gettinf if current loop is a work loop or a free time loop
-                if loop % 2 == 0:
-                    progress.color = ft.colors.GREEN
-                    mode_label.value = f"Descanso: {data['current_timer']} min."
-                else:
-                    progress.color = ft.colors.BLUE
-                    mode_label.value = f"Trabajo"
-                    session += 1
-                
-                loop_label.value = f"Sesión: {session}"
-
-                seconds = data['current_timer'] * 60
-                t_seconds = seconds
-                # Timer
-                while seconds:
-                    if breaker.is_set():
-                        raise Exception("Requested halt") # Thread breaker
-                    pc = (t_seconds - seconds) * 100 / t_seconds
-                    mins, sec = divmod(seconds, 60)
-                    timer = '{:02d}:{:02d}'.format(mins, sec)
-                    clock.value = timer
-                    progress.value = (pc/2) * 0.01
-                    print(timer, end='\r')
-                    page.update()
-                    time.sleep(1)
-                    seconds -= 1
-            
-                pomodoro.add_loop() # Update loop in pomodoro object
-
-                # Notification sub threads
-                if data['mode'] == libfango.MODES.FREE:
-                    n = threading.Thread(target=notifier, args=["A trabajar", f"Terminó el tiempo de descanso {data['current_timer']} minutos"], daemon=True)
-                    n.start()
-                else:
-                    n = threading.Thread(target=notifier, args=["Tiempo de descansar", f"Terminó el tiempo de trabajo"], daemon=True)
-                    n.start()
-        except Exception as e:
-            print(f"\nTimer stopped by user: {e.args}")
-        finally:
-            # Reset GUI
-            if not n == None:
-                n.join()
-            clock.value = "00:00"
-            anim_progress(int((pc/2)/100), 101, 1)
-
     # Activate daemon break
     def set_breaker(_e):
         if data['run'] == False:
@@ -176,7 +104,11 @@ async def main(page: ft.Page):
             data['run'] = True
             main_button.icon = ft.icons.STOP
             main_button.text = "Detener"
-            t = threading.Thread(target=pomodoro_timer, daemon=True, name="Timer")
+            t = threading.Thread(
+                target=libfango.timer,
+                args=[page, clock, progress, mode_label, loop_label, breaker],
+                daemon=True,
+                name="Timer")
             t.start()
             print(f"Started thread: {t.name}")
         else:
@@ -206,12 +138,12 @@ async def main(page: ft.Page):
         ),
         width=50,
         on_click=options,
-        disabled=True
+        #disabled=True
     )
 
     # App menu
     page.appbar = ft.AppBar(
-        title=ft.Text(APP_NAME, weight=ft.FontWeight.BOLD),
+        title=ft.Text(libfango.APP_NAME, weight=ft.FontWeight.BOLD),
         actions=[
             main_button,
             option_button
