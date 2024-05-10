@@ -161,4 +161,5 @@ async def main(page: ft.Page):
 
     page.add(form)
 
-ft.app(target=main)
+if __name__ == '__main__':
+    ft.app(target=main)

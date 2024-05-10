@@ -2,6 +2,7 @@ import threading
 import flet as ft
 import os, time
 import lib.libfango as libfango
+import lib.opt as opt
 
 from math import pi
 
@@ -27,6 +28,7 @@ async def main(page: ft.Page):
     page.window_maximizable = False
     page.padding = 0
 
+    # MAIN PAGE
     clock = ft.Text(value='00:00', text_align=ft.TextAlign.CENTER, size=54)
     progress = ft.ProgressRing(value=0.5, rotate=-pi/2, width=300, height=300, stroke_width=30, color=ft.colors.BLUE)
     progress_shadow = ft.ProgressRing(value=0.5, rotate=-pi/2, width=300, height=300, stroke_width=30, color=ft.colors.GREY)
@@ -123,7 +125,6 @@ async def main(page: ft.Page):
         on_click=set_breaker
     )
 
-    # TODO - Options view
     option_button = ft.TextButton(
         content=ft.Row(
             [
@@ -134,7 +135,7 @@ async def main(page: ft.Page):
             ]
         ),
         width=50,
-        on_click=lambda _: page.go("/store")
+        on_click=lambda _: page.go("/conf")
     )
 
     # App menu
@@ -145,6 +146,16 @@ async def main(page: ft.Page):
             option_button
         ]
     )
+
+    # CONFIG
+    # Counters
+    work_counter = opt.work_counter
+    free_counter = opt.free_counter
+    lfree_counter = opt.lfree_counter
+
+    # Other opts
+    stats = opt.stats
+    lang = opt.lang
 
     def route_change(route):
         page.views.clear()
@@ -157,10 +168,10 @@ async def main(page: ft.Page):
                 ],
             )
         )
-        if page.route == "/store":
+        if page.route == "/conf":
             page.views.append(
                 ft.View(
-                    "/store",
+                    "/conf",
                     [
                         ft.AppBar(title=ft.Text("Store"), bgcolor=ft.colors.SURFACE_VARIANT),
                         ft.ElevatedButton("Go Home", on_click=lambda _: page.go("/")),
