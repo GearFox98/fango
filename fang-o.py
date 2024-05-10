@@ -3,9 +3,6 @@ import flet as ft
 import os, time
 import lib.libfango as libfango
 
-from pydub import AudioSegment
-from pydub.playback import play
-from plyer import notification
 from math import pi
 
 data = {
