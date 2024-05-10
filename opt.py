@@ -21,27 +21,29 @@ async def main(page: ft.Page):
     # Data dict.
     fang_o_clock: dict = libfango.pomodoro_timer().get_pomodoro()
 
-    # Formulary components
-    work = ft.Container(
-        ft.Row(
-            [
-                ft.TextField(
+    # Triggers
+    #def trigger_work_plus(_e)
+
+    # Counters
+    work_counter = ft.TextField(
                     value=fang_o_clock['work'],
                     multiline=False,
                     text_align=ft.TextAlign.RIGHT,
                     label="Tiempo de trabajo",
                     width=250
-                ),
+                )
+
+    # Formulary components
+    work = ft.Container(
+        ft.Row(
+            [
+                work_counter,
                 ft.IconButton(
-                    icon=ft.icons.ADD,
-                    #on_click=add_work
-                ),
-                ft.IconButton(
-                    icon=ft.icons.REMOVE,
-                    #on_click=remove_work
+                    icon=ft.icons.CHECK,
+                    on_click=lambda _: libfango.set_option(page=page, work=work_counter, field_type="work")
                 )
             ],
-            alignment=ft.MainAxisAlignment.CENTER
+            alignment=ft.MainAxisAlignment.SPACE_EVENLY
         ),
         padding=ft.padding.only(0,10,0,0)
     )
@@ -57,15 +59,11 @@ async def main(page: ft.Page):
                     width=250
                 ),
                 ft.IconButton(
-                    icon=ft.icons.ADD,
-                    #on_click=add_free
-                ),
-                ft.IconButton(
-                    icon=ft.icons.REMOVE,
-                    #on_click=remove_free
+                    icon=ft.icons.CHECK,
+                    on_click=lambda _: libfango.set_option(page=page, work=work_counter, field_type="free")
                 )
             ],
-            alignment=ft.MainAxisAlignment.CENTER
+            alignment=ft.MainAxisAlignment.SPACE_EVENLY
         ),
         padding=ft.padding.only(0,10,0,0)
     )
@@ -81,15 +79,11 @@ async def main(page: ft.Page):
                     width=250
                 ),
                 ft.IconButton(
-                    icon=ft.icons.ADD,
-                    #on_click=add_lfree
-                ),
-                ft.IconButton(
-                    icon=ft.icons.REMOVE,
-                    #on_click=remove_lfree
+                    icon=ft.icons.CHECK,
+                    on_click=lambda _: libfango.set_option(page=page, work=work_counter, field_type="lfree")
                 )
             ],
-            alignment=ft.MainAxisAlignment.CENTER
+            alignment=ft.MainAxisAlignment.SPACE_EVENLY
         ),
         padding=ft.padding.only(0,10,0,20),
         alignment=ft.alignment.center

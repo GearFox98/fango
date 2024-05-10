@@ -197,7 +197,7 @@ class THEME(Enum):
         SYSTEM: 2
 
 class config_file():
-    theme: int = THEME.SYSTEM
+    theme: int = 2
     lang: str = 'ES'
     stats: bool = False
 
@@ -255,16 +255,35 @@ class config_file():
             )
 
 # Configuration panel functions
-def add_work(page: ft.Page, work: ft.TextField):
-    if work.value.isalnum():
-        if work.value.isdecimal():
-            value = int(work.value)
-            value += 1
-            work.value = value
+def set_option(page: ft.Page, text_field: ft.TextField, field_type: str | None):
+    pomodoro = pomodoro_timer()
+    try:
+        value = int(text_field.value)
+        if field_type == "work":
+            pomodoro.work_time = value
+        elif field_type == "free":
+            pomodoro.free_time = value
+        elif field_type == "lfree":
+            pomodoro.long_free_time = value
+        page.update()
+        pomodoro.dump_config()
+    except Exception as e:
+        print(f'Config form : Plus button : {e}')
+        pomodoro = pomodoro_timer()
+
+        def undo(_e):
+            text_field.value = pomodoro.get_wtime()
             page.update()
-        else:
-            # TODO alert non decimal value
-            pass
-    else:
-        # TODO alert non alnum value
-        pass
+
+        page.snack_bar = ft.SnackBar(
+                content=ft.Text("Debes insertar valores enteros", weight=ft.FontWeight.BOLD),
+                bgcolor=ft.colors.ORANGE,
+                action="Restablecer",
+                on_action=undo
+            )
+        page.snack_bar.open = True
+        page.update()
+
+def save_all(page: ft.Page, work: ft.TextField, free: ft.TextField, lfree: ft.TextField, stats: bool, lang: str):
+    # TODO
+    pass
