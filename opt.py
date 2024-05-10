@@ -21,17 +21,30 @@ async def main(page: ft.Page):
     # Data dict.
     fang_o_clock: dict = libfango.pomodoro_timer().get_pomodoro()
 
-    # Triggers
-    #def trigger_work_plus(_e)
-
     # Counters
     work_counter = ft.TextField(
-                    value=fang_o_clock['work'],
-                    multiline=False,
-                    text_align=ft.TextAlign.RIGHT,
-                    label="Tiempo de trabajo",
-                    width=250
-                )
+        value=fang_o_clock['work'],
+        multiline=False,
+        text_align=ft.TextAlign.RIGHT,
+        label="Tiempo de trabajo",
+        width=250
+    )
+
+    free_counter = ft.TextField(
+        value=fang_o_clock['free'],
+        multiline=False,
+        text_align=ft.TextAlign.RIGHT,
+        label="Tiempo de descanso",
+        width=250
+    )
+
+    lfree_counter = ft.TextField(
+        value=fang_o_clock['long_free'],
+        multiline=False,
+        text_align=ft.TextAlign.RIGHT,
+        label="Tiempo de descanso largo",
+        width=250
+    )
 
     # Formulary components
     work = ft.Container(
@@ -51,16 +64,10 @@ async def main(page: ft.Page):
     free = ft.Container(
         ft.Row(
             [
-                ft.TextField(
-                    value=fang_o_clock['free'],
-                    multiline=False,
-                    text_align=ft.TextAlign.RIGHT,
-                    label="Tiempo de descanso",
-                    width=250
-                ),
+                free_counter,
                 ft.IconButton(
                     icon=ft.icons.CHECK,
-                    on_click=lambda _: libfango.set_option(page=page, work=work_counter, field_type="free")
+                    on_click=lambda _: libfango.set_option(page=page, work=free_counter, field_type="free")
                 )
             ],
             alignment=ft.MainAxisAlignment.SPACE_EVENLY
@@ -71,16 +78,10 @@ async def main(page: ft.Page):
     long_free = ft.Container(
         ft.Row(
             [
-                ft.TextField(
-                    value=fang_o_clock['long_free'],
-                    multiline=False,
-                    text_align=ft.TextAlign.RIGHT,
-                    label="Tiempo de descanso largo",
-                    width=250
-                ),
+                lfree_counter,
                 ft.IconButton(
                     icon=ft.icons.CHECK,
-                    on_click=lambda _: libfango.set_option(page=page, work=work_counter, field_type="lfree")
+                    on_click=lambda _: libfango.set_option(page=page, work=lfree_counter, field_type="lfree")
                 )
             ],
             alignment=ft.MainAxisAlignment.SPACE_EVENLY
