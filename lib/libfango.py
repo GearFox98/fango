@@ -1,12 +1,16 @@
 import os, json, time, threading
 import flet as ft
+
 from enum import Enum
 from pathlib import Path
+
+# Notification component
 from plyer import notification
 from pydub.playback import play
 from pydub import AudioSegment
 
 
+TIMER = str(os.path.expanduser('~/.fango/timer.json'))
 CONFIG = str(os.path.expanduser('~/.fango/config.json'))
 APP_NAME = "Fang'o timer"
 #ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -35,6 +39,7 @@ def notifier(title:str, message: str):
     else:
         print(f"Fang says: {sound} can't be found!")
 
+# Timer stuff
 # Values for timer
 class pomodoro_timer:
     work_time: int = 25
@@ -43,7 +48,7 @@ class pomodoro_timer:
     loop: int = 1
 
     def __init__(self, work_time: int = 25, free_time: int = 5, long_free_time: int = 15, loop: int = 1):
-        if not os.path.exists(CONFIG): # Generate config file
+        if not os.path.exists(TIMER): # Generate config file
             self.work_time = work_time
             self.free_time = free_time
             self.long_free_time = long_free_time
@@ -51,7 +56,7 @@ class pomodoro_timer:
 
             self.dump_config()
         else: # Load file
-            with open(CONFIG, mode='r') as conf:
+            with open(TIMER, mode='r') as conf:
                 temp = json.load(conf)
                 self.work_time = temp['work']
                 self.free_time = temp['free']
@@ -83,7 +88,7 @@ class pomodoro_timer:
     def dump_config(self):
         pomodoro = self.get_pomodoro()
         # Dump file
-        with open(CONFIG, mode='w') as conf:
+        with open(TIMER, mode='w') as conf:
             json.dump(pomodoro, fp=conf, indent=4)
     
     def reset_loop(self):
@@ -184,3 +189,82 @@ def timer(page: ft.Page, clock: ft.Text, progress_bow: ft.ProgressRing, mode_lab
                 n.join()
             clock.value = "00:00"
             anim_progress(int((pc/2)/100), 101, 1, progress_bow, page)
+
+# Config stuff
+class THEME(Enum):
+        LIGHT: 0
+        DARK: 1
+        SYSTEM: 2
+
+class config_file():
+    theme: int = THEME.SYSTEM
+    lang: str = 'ES'
+    stats: bool = False
+
+    def __init__(self):
+        if os.path.exists(CONFIG):
+            with open(CONFIG, 'r') as conf:
+                config = json.load(conf)
+                self.theme = config['theme']
+                self.lang = config['lang']
+                self.stats = config['stats']
+        else:
+            with open(CONFIG, 'w') as conf:
+                config = {
+                    'theme': self.theme,
+                    'lang': self.lang,
+                    'stats': self.stats
+                }
+
+                json.dump(
+                    obj=config,
+                    fp=conf,
+                    indent= 4
+                )
+    
+    # Getters
+    def get_conf(self) -> dict:
+        config = dict()
+        with open(CONFIG, 'r') as conf:
+            config = json.load(conf)
+        return config
+    
+    # Setters
+    def set_theme(self, theme: str):
+        self.theme = theme
+
+    def set_lang(self, lang: str):
+        self.lang = lang
+    
+    def set_stats(self, stats: str):
+        self.stats = stats
+    
+    # Misc
+    def write_conf(self):
+        with open(CONFIG, 'w') as conf:
+            config = {
+                'theme': self.theme,
+                'lang': self.lang,
+                'stats': self.stats
+            }
+
+            json.dump(
+                obj=config,
+                fp=conf,
+                indent= 4
+            )
+
+# Configuration panel functions
+def add_work(page: ft.Page, work: ft.TextField):
+    if work.value.isalnum():
+        if work.value.isdecimal():
+            value = int(work.value)
+            value += 1
+            work.value = value
+            page.update()
+        else:
+            # TODO alert non decimal value
+            pass
+    else:
+        # TODO alert non alnum value
+        pass
