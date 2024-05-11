@@ -1,3 +1,4 @@
+from ast import List
 import os, json, time, threading
 import flet as ft
 
@@ -5,6 +6,7 @@ from enum import Enum
 from pathlib import Path
 
 # Notification component
+from pkg_resources import working_set
 from plyer import notification
 from pydub.playback import play
 from pydub import AudioSegment
@@ -192,14 +194,14 @@ def timer(page: ft.Page, clock: ft.Text, progress_bow: ft.ProgressRing, mode_lab
 
 # Config stuff
 class THEME(Enum):
-        LIGHT: 0
-        DARK: 1
-        SYSTEM: 2
+    LIGHT = 0,
+    DARK = 1,
+    SYSTEM = 2
 
 class config_file():
-    theme: int = 2
-    lang: str = 'ES'
-    stats: bool = False
+    theme = THEME.SYSTEM
+    lang = 'ES'
+    stats = False
 
     def __init__(self):
         if os.path.exists(CONFIG):
@@ -236,7 +238,7 @@ class config_file():
     def set_lang(self, lang: str):
         self.lang = lang
     
-    def set_stats(self, stats: str):
+    def set_stats(self, stats: bool):
         self.stats = stats
     
     # Misc
@@ -258,7 +260,7 @@ class config_file():
 def set_option(page: ft.Page, text_field: ft.TextField, field_type: str | None):
     pomodoro = pomodoro_timer()
     try:
-        value = int(text_field.value)
+        value = int(text_field.value) # type: ignore
         if field_type == "work":
             pomodoro.work_time = value
         elif field_type == "free":
@@ -272,7 +274,7 @@ def set_option(page: ft.Page, text_field: ft.TextField, field_type: str | None):
         pomodoro = pomodoro_timer()
 
         def undo(_e):
-            text_field.value = pomodoro.get_wtime()
+            text_field.value = pomodoro.get_wtime() # type: ignore
             page.update()
 
         page.snack_bar = ft.SnackBar(
@@ -284,6 +286,21 @@ def set_option(page: ft.Page, text_field: ft.TextField, field_type: str | None):
         page.snack_bar.open = True
         page.update()
 
-def save_all(page: ft.Page, work: ft.TextField, free: ft.TextField, lfree: ft.TextField, stats: bool, lang: str):
-    # TODO
-    pass
+def save_all(page: ft.Page, work: ft.TextField, free: ft.TextField, lfree: ft.TextField, stats: ft.Checkbox, lang: ft.Dropdown, theme):
+    set_option(page, work, "work")
+    set_option(page, free, "free")
+    set_option(page, lfree, "lfree")
+
+    with open(CONFIG, "w") as config:
+        conf = config_file()
+        conf.set_stats(stats.value) # type: ignore
+        #conf.set_lang(lang.value) # type: ignore
+        conf.set_theme(theme)
+
+        print(conf)
+
+        json.dump(
+            obj=conf,
+            fp=config,
+            indent=4
+        )

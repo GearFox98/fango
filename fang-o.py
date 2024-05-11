@@ -12,10 +12,6 @@ data = {
     'run' : False
 }
 
-# Debugging
-def options(_e):
-    libfango.notifier("It works!", "Sound!")
-
 # Main UI
 async def main(page: ft.Page):
     page.title = libfango.APP_NAME
@@ -27,6 +23,8 @@ async def main(page: ft.Page):
     page.window_min_width = 415
     page.window_maximizable = False
     page.padding = 0
+
+    pomodoro_data = libfango.pomodoro_timer().get_pomodoro()
 
     # MAIN PAGE
     clock = ft.Text(value='00:00', text_align=ft.TextAlign.CENTER, size=54)
@@ -125,6 +123,10 @@ async def main(page: ft.Page):
         on_click=set_breaker
     )
 
+    def opt_btn_func(_e):
+        pomodoro_data = libfango.pomodoro_timer().get_pomodoro()
+        page.go("/conf")
+
     option_button = ft.TextButton(
         content=ft.Row(
             [
@@ -135,16 +137,17 @@ async def main(page: ft.Page):
             ]
         ),
         width=50,
-        on_click=lambda _: page.go("/conf")
+        on_click=opt_btn_func
     )
 
     # App menu
-    appbar = ft.AppBar(
+    main_appbar = ft.AppBar(
         title=ft.Text(libfango.APP_NAME, weight=ft.FontWeight.BOLD),
         actions=[
             main_button,
             option_button
-        ]
+        ],
+        #bgcolor=ft.colors.SURFACE_VARIANT
     )
 
     # CONFIG
@@ -153,9 +156,90 @@ async def main(page: ft.Page):
     free_counter = opt.free_counter
     lfree_counter = opt.lfree_counter
 
+    work_counter.value = pomodoro_data['work']
+    free_counter.value = pomodoro_data['free']
+    lfree_counter.value = pomodoro_data['long_free']
+
+    # Form components
+    work = ft.Container(
+        ft.Row(
+            [
+                work_counter,
+                ft.IconButton(
+                    icon=ft.icons.CHECK,
+                    on_click=lambda _: libfango.set_option(page=page, text_field=free_counter, field_type="free") # type: ignore
+                )
+            ],
+            alignment=ft.MainAxisAlignment.SPACE_EVENLY
+        ),
+        padding=ft.padding.only(0,10,0,0)
+    )
+
+    free = ft.Container(
+        ft.Row(
+            [
+                free_counter,
+                ft.IconButton(
+                    icon=ft.icons.CHECK,
+                    on_click=lambda _: libfango.set_option(page=page, text_field=free_counter, field_type="free") # type: ignore
+                )
+            ], # type: ignore
+            alignment=ft.MainAxisAlignment.SPACE_EVENLY
+        ),
+        padding=ft.padding.only(0,10,0,0)
+    )
+
+    long_free = ft.Container(
+        ft.Row(
+            [
+                lfree_counter,
+                ft.IconButton(
+                    icon=ft.icons.CHECK,
+                    on_click=lambda _: libfango.set_option(page=page, text_field=lfree_counter, field_type="lfree") # type: ignore
+                )
+            ], # type: ignore
+            alignment=ft.MainAxisAlignment.SPACE_EVENLY
+        ),
+        padding=ft.padding.only(0,10,0,20),
+        alignment=ft.alignment.center
+    )
+
     # Other opts
     stats = opt.stats
     lang = opt.lang
+
+    misc = ft.Row(
+        [
+            stats,
+            lang
+        ],
+        alignment=ft.MainAxisAlignment.SPACE_AROUND
+    )
+
+    # Integrate everything
+    config_form = ft.Container(
+        ft.Column(
+            [
+                work,
+                free,
+                long_free,
+                misc
+            ]
+        ),
+        padding=ft.padding.only(10,10,10,20)
+    )
+
+    # Appbar items
+    save_button = opt.save
+
+    save_button.on_click = lambda _: libfango.save_all(page, work_counter, free_counter, lfree_counter, stats, lang, libfango.THEME.SYSTEM)
+
+    opt_appbar = ft.AppBar(
+        title=ft.Text("Configuracion", weight=ft.FontWeight.BOLD),
+        actions=[
+            save_button
+        ]
+    )
 
     def route_change(route):
         page.views.clear()
@@ -163,7 +247,7 @@ async def main(page: ft.Page):
             ft.View(
                 "/",
                 [
-                    appbar,
+                    main_appbar,
                     timer
                 ],
             )
@@ -173,8 +257,8 @@ async def main(page: ft.Page):
                 ft.View(
                     "/conf",
                     [
-                        ft.AppBar(title=ft.Text("Store"), bgcolor=ft.colors.SURFACE_VARIANT),
-                        ft.ElevatedButton("Go Home", on_click=lambda _: page.go("/")),
+                        opt_appbar,
+                        config_form
                     ],
                 )
             )

@@ -53,7 +53,7 @@ async def main(page: ft.Page):
                 work_counter,
                 ft.IconButton(
                     icon=ft.icons.CHECK,
-                    on_click=lambda _: libfango.set_option(page=page, work=work_counter, field_type="work")
+                    on_click=lambda _: libfango.set_option(page=page, work=work_counter, field_type="work") # type: ignore
                 )
             ],
             alignment=ft.MainAxisAlignment.SPACE_EVENLY
@@ -67,7 +67,7 @@ async def main(page: ft.Page):
                 free_counter,
                 ft.IconButton(
                     icon=ft.icons.CHECK,
-                    on_click=lambda _: libfango.set_option(page=page, work=free_counter, field_type="free")
+                    on_click=lambda _: libfango.set_option(page=page, work=free_counter, field_type="free") # type: ignore
                 )
             ],
             alignment=ft.MainAxisAlignment.SPACE_EVENLY
@@ -81,7 +81,7 @@ async def main(page: ft.Page):
                 lfree_counter,
                 ft.IconButton(
                     icon=ft.icons.CHECK,
-                    on_click=lambda _: libfango.set_option(page=page, work=lfree_counter, field_type="lfree")
+                    on_click=lambda _: libfango.set_option(page=page, work=lfree_counter, field_type="lfree") # type: ignore
                 )
             ],
             alignment=ft.MainAxisAlignment.SPACE_EVENLY

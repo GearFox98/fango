@@ -28,15 +28,17 @@ lfree_counter = ft.TextField(
     width=250
 )
 
+check_button = ft.IconButton(
+    icon=ft.icons.CHECK,
+    #on_click=lambda _: libfango.set_option(page=page, work=work_counter, field_type="work")
+)
+
 # Form components
 work = ft.Container(
     ft.Row(
         [
             work_counter,
-            ft.IconButton(
-                icon=ft.icons.CHECK,
-                #on_click=lambda _: libfango.set_option(page=page, work=work_counter, field_type="work")
-            )
+            check_button
         ],
         alignment=ft.MainAxisAlignment.SPACE_EVENLY
     ),
