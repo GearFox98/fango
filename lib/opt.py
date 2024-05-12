@@ -29,58 +29,16 @@ lfree_counter = ft.TextField(
 )
 
 check_button = ft.IconButton(
-    icon=ft.icons.CHECK,
-    #on_click=lambda _: libfango.set_option(page=page, work=work_counter, field_type="work")
-)
-
-# Form components
-work = ft.Container(
-    ft.Row(
-        [
-            work_counter,
-            check_button
-        ],
-        alignment=ft.MainAxisAlignment.SPACE_EVENLY
-    ),
-    padding=ft.padding.only(0,10,0,0)
-)
-
-free = ft.Container(
-    ft.Row(
-        [
-            free_counter,
-            ft.IconButton(
-                icon=ft.icons.CHECK,
-                #on_click=lambda _: libfango.set_option(page=page, work=free_counter, field_type="free")
-            )
-        ],
-        alignment=ft.MainAxisAlignment.SPACE_EVENLY
-    ),
-    padding=ft.padding.only(0,10,0,0)
-)
-
-long_free = ft.Container(
-    ft.Row(
-        [
-            lfree_counter,
-            ft.IconButton(
-                icon=ft.icons.CHECK,
-                #on_click=lambda _: libfango.set_option(page=page, work=lfree_counter, field_type="lfree")
-            )
-        ],
-        alignment=ft.MainAxisAlignment.SPACE_EVENLY
-    ),
-    padding=ft.padding.only(0,10,0,20),
-    alignment=ft.alignment.center
+    icon=ft.icons.CHECK
 )
 
 stats = ft.Checkbox(
     label="Guardar estadísticas",
-    #value=
+    value=False
 )
 
 lang = ft.Dropdown(
-    #value,
+    value="ES",
     options=[
         ft.dropdown.Option(
             key='ES',
@@ -95,53 +53,8 @@ lang = ft.Dropdown(
     width=170
 )
 
-misc = ft.Row(
-    [
-        stats,
-        lang
-    ],
-    alignment=ft.MainAxisAlignment.SPACE_AROUND
-)
-
-# Options component
-form = ft.Container(
-    ft.Column(
-        [
-            work,
-            free,
-            long_free,
-            misc
-        ]
-    ),
-    padding=ft.padding.only(10,10,10,20)
-)
-
-# UI
 save = ft.TextButton(
     text="Guardar",
     icon=ft.icons.SAVE,
-    icon_color=ft.colors.BLACK,
-    #on_click=save
-)
-
-back = ft.TextButton(
-    content=ft.Row(
-        [
-            ft.Icon(
-                name=ft.icons.ARROW_BACK,
-                color=ft.colors.BLACK
-            )
-        ]
-    ),
-    width=50,
-    #on_click=back_to_timer
-)
-
-# App menu
-appbar = ft.AppBar(
-    title=ft.Text("Configuracion", weight=ft.FontWeight.BOLD),
-    actions=[
-        back,
-        save
-    ]
+    icon_color=ft.colors.BLACK
 )

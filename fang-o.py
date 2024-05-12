@@ -24,7 +24,11 @@ async def main(page: ft.Page):
     page.window_maximizable = False
     page.padding = 0
 
-    pomodoro_data = libfango.pomodoro_timer().get_pomodoro()
+    # Timer
+    pomodoro = libfango.pomodoro_timer()
+    pomodoro_data = pomodoro.get_pomodoro()
+    # Configuration
+    config_data = libfango.config_file().get_conf()
 
     # MAIN PAGE
     clock = ft.Text(value='00:00', text_align=ft.TextAlign.CENTER, size=54)
@@ -167,7 +171,7 @@ async def main(page: ft.Page):
                 work_counter,
                 ft.IconButton(
                     icon=ft.icons.CHECK,
-                    on_click=lambda _: libfango.set_option(page=page, text_field=free_counter, field_type="free") # type: ignore
+                    on_click=lambda _: libfango.set_option(pomodoro=pomodoro, page=page, text_field=work_counter, field_type="work") # type: ignore
                 )
             ],
             alignment=ft.MainAxisAlignment.SPACE_EVENLY
@@ -181,7 +185,7 @@ async def main(page: ft.Page):
                 free_counter,
                 ft.IconButton(
                     icon=ft.icons.CHECK,
-                    on_click=lambda _: libfango.set_option(page=page, text_field=free_counter, field_type="free") # type: ignore
+                    on_click=lambda _: libfango.set_option(pomodoro=pomodoro, page=page, text_field=free_counter, field_type="free") # type: ignore
                 )
             ], # type: ignore
             alignment=ft.MainAxisAlignment.SPACE_EVENLY
@@ -195,7 +199,7 @@ async def main(page: ft.Page):
                 lfree_counter,
                 ft.IconButton(
                     icon=ft.icons.CHECK,
-                    on_click=lambda _: libfango.set_option(page=page, text_field=lfree_counter, field_type="lfree") # type: ignore
+                    on_click=lambda _: libfango.set_option(pomodoro=pomodoro, page=page, text_field=lfree_counter, field_type="lfree") # type: ignore
                 )
             ], # type: ignore
             alignment=ft.MainAxisAlignment.SPACE_EVENLY
@@ -207,6 +211,9 @@ async def main(page: ft.Page):
     # Other opts
     stats = opt.stats
     lang = opt.lang
+
+    stats.value = config_data['stats']
+    lang.value = config_data['lang']
 
     misc = ft.Row(
         [
@@ -232,7 +239,7 @@ async def main(page: ft.Page):
     # Appbar items
     save_button = opt.save
 
-    save_button.on_click = lambda _: libfango.save_all(page, work_counter, free_counter, lfree_counter, stats, lang, libfango.THEME.SYSTEM)
+    save_button.on_click = lambda _: libfango.save_all(pomodoro, page, work_counter, free_counter, lfree_counter, stats, lang, libfango.THEME['SYSTEM'])
 
     opt_appbar = ft.AppBar(
         title=ft.Text("Configuracion", weight=ft.FontWeight.BOLD),

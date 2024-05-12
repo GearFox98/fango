@@ -193,15 +193,16 @@ def timer(page: ft.Page, clock: ft.Text, progress_bow: ft.ProgressRing, mode_lab
             anim_progress(int((pc/2)/100), 101, 1, progress_bow, page)
 
 # Config stuff
-class THEME(Enum):
-    LIGHT = 0,
-    DARK = 1,
-    SYSTEM = 2
+THEME = {
+    'LIGHT': 0,
+    'DARK': 1,
+    'SYSTEM': 2
+}
 
 class config_file():
-    theme = THEME.SYSTEM
-    lang = 'ES'
-    stats = False
+    theme = THEME['SYSTEM']
+    lang: str = 'ES'
+    stats: bool = False
 
     def __init__(self):
         if os.path.exists(CONFIG):
@@ -219,7 +220,7 @@ class config_file():
                 }
 
                 json.dump(
-                    obj=config,
+                    config,
                     fp=conf,
                     indent= 4
                 )
@@ -251,14 +252,13 @@ class config_file():
             }
 
             json.dump(
-                obj=config,
+                config,
                 fp=conf,
                 indent= 4
             )
 
 # Configuration panel functions
-def set_option(page: ft.Page, text_field: ft.TextField, field_type: str | None):
-    pomodoro = pomodoro_timer()
+def set_option(pomodoro: pomodoro_timer, page: ft.Page, text_field: ft.TextField, field_type: str | None):
     try:
         value = int(text_field.value) # type: ignore
         if field_type == "work":
@@ -269,11 +269,9 @@ def set_option(page: ft.Page, text_field: ft.TextField, field_type: str | None):
             pomodoro.long_free_time = value
         page.update()
         pomodoro.dump_config()
-    except Exception as e:
-        print(f'Config form : Plus button : {e}')
-        pomodoro = pomodoro_timer()
-
+    except Exception as _e:
         def undo(_e):
+            pomodoro = pomodoro_timer()
             text_field.value = pomodoro.get_wtime() # type: ignore
             page.update()
 
@@ -286,21 +284,18 @@ def set_option(page: ft.Page, text_field: ft.TextField, field_type: str | None):
         page.snack_bar.open = True
         page.update()
 
-def save_all(page: ft.Page, work: ft.TextField, free: ft.TextField, lfree: ft.TextField, stats: ft.Checkbox, lang: ft.Dropdown, theme):
-    set_option(page, work, "work")
-    set_option(page, free, "free")
-    set_option(page, lfree, "lfree")
+def save_all(pomodoro: pomodoro_timer, page: ft.Page, work: ft.TextField, free: ft.TextField, lfree: ft.TextField, stats: ft.Checkbox, lang: ft.Dropdown, theme):
+    set_option(pomodoro, page, work, "work")
+    set_option(pomodoro, page, free, "free")
+    set_option(pomodoro, page, lfree, "lfree")
 
-    with open(CONFIG, "w") as config:
-        conf = config_file()
-        conf.set_stats(stats.value) # type: ignore
-        #conf.set_lang(lang.value) # type: ignore
-        conf.set_theme(theme)
+    config = config_file()
+    config.set_stats(stats.value) # type: ignore
+    config.set_lang(lang.value) # type: ignore
+    config.set_theme(theme)
 
-        print(conf)
+    print(config)
+    print(f"Stats object: {stats} - Value: {stats.value} - Type: {type(stats.value)}")
+    print(f"Language object: {lang} - Value: {lang.value} - Type: {type(lang.value)}")
 
-        json.dump(
-            obj=conf,
-            fp=config,
-            indent=4
-        )
+    config.write_conf()
