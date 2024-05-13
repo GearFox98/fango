@@ -344,7 +344,7 @@ async def main(page: ft.Page):
     page.add(timer)
 
 # Create config folder
-if not os.path.exists(os.path.expanduser("~/.fango")):
-    os.mkdir(os.path.expanduser("~/.fango"))
+if not os.path.exists(libfango.USER_DIR):
+    os.mkdir(libfango.USER_DIR)
 
 ft.app(target=main)

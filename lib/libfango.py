@@ -3,14 +3,13 @@ import flet as ft
 
 from enum import Enum
 from pathlib import Path
-from lib.translations import TRANSLATIONS
 
 # Notification component
 from plyer import notification
 from pydub.playback import play
 from pydub import AudioSegment
 
-
+from lib.translations import TRANSLATIONS
 
 APP_NAME = "Fang'o timer"
 WINDOW_DIM = {
@@ -22,6 +21,12 @@ TIMER = str(os.path.expanduser('~/.fango/timer.json'))
 CONFIG = str(os.path.expanduser('~/.fango/config.json'))
 ROOT_DIR = Path(os.path.realpath(__file__)).parent.parent
 ASSETS_DIR = os.path.join(ROOT_DIR, "assets")
+USER_DIR = os.path.expanduser("~/.fango")
+
+THEME = {
+    'LIGHT': "LIGHT",
+    'DARK': "DARK"
+}
 
 class MODES(Enum):
     WORKING = 0,
@@ -48,11 +53,6 @@ def notifier(title:str, message: str):
 # Timer stuff
 # Values for timer
 class pomodoro_timer:
-    work_time: int = 25
-    free_time: int = 5
-    long_free_time: int = 15
-    loop: int = 1
-
     def __init__(self, work_time: int = 25, free_time: int = 5, long_free_time: int = 15, loop: int = 1):
         if not os.path.exists(TIMER): # Generate config file
             self.work_time = work_time
@@ -69,18 +69,23 @@ class pomodoro_timer:
                 self.long_free_time = temp['long_free']
                 self.loop = temp['loop']
 
+    # Get work time
     def get_wtime(self) -> int:
         return self.work_time
     
+    # Get free time
     def get_ftime(self) -> int:
         return self.free_time
     
+    # Get long free time
     def get_lftime(self) -> int:
         return self.long_free_time
     
+    # Get current loop
     def get_loop(self) -> int:
         return self.loop
     
+    # Return a dictionary with the timer attributes
     def get_pomodoro(self) -> dict:
         pomodoro = {
             'work' : self.work_time,
@@ -105,7 +110,6 @@ class pomodoro_timer:
         self.loop += 1
         if self.loop == 9:
             self.loop = 1
-        self.dump_config()
 
 # Get Data
 def get_data(pomodoro: pomodoro_timer, loop: int = 1) -> dict:
@@ -131,7 +135,7 @@ def get_data(pomodoro: pomodoro_timer, loop: int = 1) -> dict:
 
     return data
 
-# Animate progress
+# Animate progress bow on start and on finish
 def anim_progress(start: int, end: int, step: int, progress: ft.ProgressRing, page: ft.Page):
         for i in range(start, end, step):
             progress.value = (i / 100)/2
@@ -152,6 +156,7 @@ def timer(page: ft.Page, clock: ft.Text, progress_bow: ft.ProgressRing, mode_lab
                 loop = pomodoro.get_loop()
 
                 data = get_data(pomodoro, loop)
+                config = config_file()
 
                 # Gettinf if current loop is a work loop or a free time loop
                 if loop % 2 == 0:
@@ -185,10 +190,10 @@ def timer(page: ft.Page, clock: ft.Text, progress_bow: ft.ProgressRing, mode_lab
 
                 # Notification sub threads
                 if data['mode'] == MODES.FREE:
-                    n = threading.Thread(target=notifier, args=["A trabajar", f"Terminó el tiempo de descanso {data['current_timer']} minutos"], daemon=True)
+                    n = threading.Thread(target=notifier, args=[ui_lang['NOTIFICATIONS'][0], ui_lang['NOTIFICATIONS'][1].format(data['current_timer'])], daemon=True)
                     n.start()
                 else:
-                    n = threading.Thread(target=notifier, args=["Tiempo de descansar", f"Terminó el tiempo de trabajo"], daemon=True)
+                    n = threading.Thread(target=notifier, args=[ui_lang['NOTIFICATIONS'][2], ui_lang['NOTIFICATIONS'][3]], daemon=True)
                     n.start()
         except Exception as e:
             print(f"\nTimer stopped by user: {e.args}")
@@ -200,17 +205,7 @@ def timer(page: ft.Page, clock: ft.Text, progress_bow: ft.ProgressRing, mode_lab
             anim_progress(int((pc/2)/100), 101, 1, progress_bow, page)
 
 # Config stuff
-THEME = {
-    'LIGHT': "LIGHT",
-    'DARK': "DARK",
-    'SYSTEM': "SYSTEM"
-}
-
 class config_file():
-    theme = THEME['SYSTEM']
-    lang: str = 'ES'
-    stats: bool = False
-
     def __init__(self):
         if os.path.exists(CONFIG):
             with open(CONFIG, 'r') as conf:
@@ -221,9 +216,9 @@ class config_file():
         else:
             with open(CONFIG, 'w') as conf:
                 config = {
-                    'theme': self.theme,
-                    'lang': self.lang,
-                    'stats': self.stats
+                    'theme': THEME['LIGHT'],
+                    'lang': 'ES',
+                    'stats': False
                 }
 
                 json.dump(
@@ -277,15 +272,19 @@ def set_option(pomodoro: pomodoro_timer, page: ft.Page, text_field: ft.TextField
         page.update()
         pomodoro.dump_config()
     except Exception as _e:
+        config = config_file()
+        lang = config.lang
+        warn = TRANSLATIONS[lang]
+
         def undo(_e):
             pomodoro = pomodoro_timer()
             text_field.value = pomodoro.get_wtime() # type: ignore
             page.update()
 
         page.snack_bar = ft.SnackBar(
-                content=ft.Text("Debes insertar valores enteros", weight=ft.FontWeight.BOLD),
+                content=ft.Text(warn['WARNINGS'][1], weight=ft.FontWeight.BOLD),
                 bgcolor=ft.colors.ORANGE,
-                action="Restablecer",
+                action=warn['BUTTONS'][4],
                 on_action=undo
             )
         page.snack_bar.open = True
@@ -294,15 +293,9 @@ def set_option(pomodoro: pomodoro_timer, page: ft.Page, text_field: ft.TextField
 def set_stats_interface(page: ft.Page, stats: ft.Checkbox | bool, stats_btn: None | ft.TextButton = None):
     value = stats.value if not type(stats) == bool else stats
     if value:
-        #page.window_max_height = WINDOW_DIM['STATS_H']
-        #page.window_min_height = WINDOW_DIM['STATS_H']
-        #page.window_height = WINDOW_DIM['STATS_H']
         if not stats_btn == None:
             stats_btn.visible = True
     else:
-        #page.window_max_height = WINDOW_DIM['NORMAL_H']
-        #page.window_min_height = WINDOW_DIM['NORMAL_H']
-        #page.window_height = WINDOW_DIM['NORMAL_H']
         if not stats_btn == None:
             stats_btn.visible = False
     page.update()
