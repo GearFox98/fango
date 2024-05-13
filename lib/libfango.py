@@ -12,18 +12,13 @@ from pydub import AudioSegment
 from lib.translations import TRANSLATIONS
 from lib.datasets import Config_File
 from lib.datasets import Pomodoro_Timer
+from lib.path import (TIMER, CONFIG, ROOT_DIR, ASSETS_DIR, USER_DIR)
 
 APP_NAME = "Fang'o timer"
 WINDOW_DIM = {
     "NORMAL_H": 450,
     "STATS_H": 500
 }
-
-TIMER = str(os.path.expanduser('~/.fango/timer.json'))
-CONFIG = str(os.path.expanduser('~/.fango/config.json'))
-ROOT_DIR = Path(os.path.realpath(__file__)).parent.parent
-ASSETS_DIR = os.path.join(ROOT_DIR, "assets")
-USER_DIR = os.path.expanduser("~/.fango")
 
 THEME = {
     'LIGHT': "LIGHT",

@@ -1,6 +1,7 @@
 import os, json, datetime
 import lib.libfango as libfango
-from programs.fango.lib.libfango import CONFIG, THEME, TIMER
+
+from lib.path import (TIMER, CONFIG, ROOT_DIR, ASSETS_DIR, USER_DIR)
 
 class Task():
     # Each task has Name, Details, a Deadline and can be Done or not (by default they're not done: False)
@@ -44,7 +45,7 @@ class Task():
 #   }
 # }
 class Stats():
-    LOCATION = f"{libfango.USER_DIR}/stats"
+    LOCATION = f"{USER_DIR}/stats"
     TODAY = datetime.date.today()
     MONTH = str(TODAY)[0:7]
     FILE = f"{LOCATION}/{str(TODAY)[0:7]}.json"
@@ -83,7 +84,7 @@ class Config_File():
         else:
             with open(CONFIG, 'w') as conf:
                 config = {
-                    'theme': THEME['LIGHT'],
+                    'theme': libfango.THEME['LIGHT'],
                     'lang': 'ES',
                     'stats': False
                 }
