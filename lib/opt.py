@@ -5,7 +5,6 @@ import lib.libfango as libfango
 
 # Counters
 work_counter = ft.TextField(
-    #value=fang_o_clock['work'],
     multiline=False,
     text_align=ft.TextAlign.RIGHT,
     label="Tiempo de trabajo",
@@ -13,7 +12,6 @@ work_counter = ft.TextField(
 )
 
 free_counter = ft.TextField(
-    #value=fang_o_clock['free'],
     multiline=False,
     text_align=ft.TextAlign.RIGHT,
     label="Tiempo de descanso",
@@ -21,7 +19,6 @@ free_counter = ft.TextField(
 )
 
 lfree_counter = ft.TextField(
-    #value=fang_o_clock['long_free'],
     multiline=False,
     text_align=ft.TextAlign.RIGHT,
     label="Tiempo de descanso largo",
@@ -33,7 +30,7 @@ check_button = ft.IconButton(
 )
 
 stats = ft.Checkbox(
-    label="Guardar estadísticas",
+    label="Guardar estadísticas de tiempo",
     value=False
 )
 
@@ -53,8 +50,28 @@ lang = ft.Dropdown(
     width=170
 )
 
+theme = ft.Dropdown(
+    value="SYSTEM",
+    options=[
+        ft.dropdown.Option(
+            key="LIGHT",
+            text='Claro'
+        ),
+        ft.dropdown.Option(
+            key="DARK",
+            text='Oscuro'
+        )
+    ],
+    icon=ft.icons.PALETTE,
+    width=170
+)
+
+theme_switch = ft.IconButton(
+    icon=ft.icons.SUNNY,
+    icon_color=ft.colors.BLACK54
+)
+
 save = ft.TextButton(
-    text="Guardar",
-    icon=ft.icons.SAVE,
-    icon_color=ft.colors.BLACK
+    text="Guardar todo",
+    icon=ft.icons.SAVE
 )

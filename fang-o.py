@@ -3,7 +3,9 @@ import flet as ft
 import os, time
 import lib.libfango as libfango
 import lib.opt as opt
+import lib.themes as themes
 
+from lib.translations import TRANSLATIONS
 from math import pi
 
 data = {
@@ -14,21 +16,30 @@ data = {
 
 # Main UI
 async def main(page: ft.Page):
-    page.title = libfango.APP_NAME
-    page.window_width = 415
-    page.window_height = 415
-    page.window_max_height = 400
-    page.window_max_width = 415
-    page.window_min_height = 400
-    page.window_min_width = 415
-    page.window_maximizable = False
-    page.padding = 0
-
     # Timer
     pomodoro = libfango.pomodoro_timer()
     pomodoro_data = pomodoro.get_pomodoro()
     # Configuration
     config_data = libfango.config_file().get_conf()
+
+    # Page setting
+    page.title = libfango.APP_NAME
+    page.window_width = 415
+    page.window_height = 475
+    page.window_max_height = 475
+    page.window_max_width = 415
+    page.window_min_height = 475
+    page.window_min_width = 415
+    page.window_maximizable = False
+    page.padding = 0
+
+    if config_data["theme"] == 'LIGHT':
+        page.theme_mode = themes.LIGHT
+    elif config_data["theme"] == 'DARK':
+        page.theme_mode = themes.DARK
+
+    lang = config_data["lang"]
+    ui_text = TRANSLATIONS[lang]
 
     # MAIN PAGE
     clock = ft.Text(value='00:00', text_align=ft.TextAlign.CENTER, size=54)
@@ -36,8 +47,8 @@ async def main(page: ft.Page):
     progress_shadow = ft.ProgressRing(value=0.5, rotate=-pi/2, width=300, height=300, stroke_width=30, color=ft.colors.GREY)
     
     # Stages attributes
-    loop_label = ft.Text("Sesión: 0", size=24)
-    mode_label = ft.Text("Trabajo", size=24)
+    loop_label = ft.Text(f"{ui_text['STAGES_SECTION'][0]}: 0", size=24)
+    mode_label = ft.Text(f"{ui_text['STAGES_SECTION'][1]}", size=24)
     
     # Stages (Below the clock)
     stages = ft.Row(
@@ -73,12 +84,11 @@ async def main(page: ft.Page):
                             stages,
                         ],
                         alignment=ft.MainAxisAlignment.CENTER,
-                        
                     ),
                     width=410,
                     height=330,
                     alignment=ft.alignment.center,
-                    padding=35
+                    padding=ft.padding.only(35, 50, 35, 0)
                 )
             ]
         )
@@ -104,7 +114,7 @@ async def main(page: ft.Page):
             breaker.clear()
             data['run'] = True
             main_button.icon = ft.icons.STOP
-            main_button.text = "Detener"
+            main_button.text = ui_text["BUTTONS"][1]
             t = threading.Thread(
                 target=libfango.timer,
                 args=[page, clock, progress, mode_label, loop_label, breaker],
@@ -115,15 +125,15 @@ async def main(page: ft.Page):
         else:
             data["run"] = False
             main_button.icon = ft.icons.PLAY_ARROW
-            main_button.text = "Iniciar"
+            main_button.text = f"{ui_text['BUTTONS'][0]}"
             breaker.set()
             page.update()
 
-    # UI
+    # MAIN - UI
     main_button = ft.TextButton(
-        text="Iniciar",
+        text=f"{ui_text['BUTTONS'][0]}",
         icon=ft.icons.PLAY_ARROW,
-        icon_color=ft.colors.BLACK,
+        #icon_color=ft.colors.BLACK,
         on_click=set_breaker
     )
 
@@ -136,12 +146,32 @@ async def main(page: ft.Page):
             [
                 ft.Icon(
                     name=ft.icons.SETTINGS,
-                    color=ft.colors.BLACK
+                    #color=ft.colors.BLACK
                 )
             ]
         ),
         width=50,
         on_click=opt_btn_func
+    )
+
+    todo_button = ft.TextButton(
+        text=f"{ui_text['BUTTONS'][3]}",
+        icon=ft.icons.CHECK
+    )
+    
+    stats_button = ft.TextButton(
+        text=f"{ui_text['BUTTONS'][2]}",    
+        icon=ft.icons.BAR_CHART,
+        visible=True
+    )
+    
+    stats_area = ft.Row(
+        controls=[
+            todo_button,
+            stats_button
+        ],
+        width=415,
+        alignment=ft.MainAxisAlignment.CENTER
     )
 
     # App menu
@@ -154,6 +184,8 @@ async def main(page: ft.Page):
         #bgcolor=ft.colors.SURFACE_VARIANT
     )
 
+    libfango.set_stats_interface(page, config_data["stats"], stats_button)
+
     # CONFIG
     # Counters
     work_counter = opt.work_counter
@@ -163,6 +195,10 @@ async def main(page: ft.Page):
     work_counter.value = pomodoro_data['work']
     free_counter.value = pomodoro_data['free']
     lfree_counter.value = pomodoro_data['long_free']
+
+    work_counter.label = ui_text['COUNTERS'][0]
+    free_counter.label = ui_text['COUNTERS'][1]
+    lfree_counter.label = ui_text['COUNTERS'][2]
 
     # Form components
     work = ft.Container(
@@ -204,16 +240,37 @@ async def main(page: ft.Page):
             ], # type: ignore
             alignment=ft.MainAxisAlignment.SPACE_EVENLY
         ),
-        padding=ft.padding.only(0,10,0,20),
+        padding=ft.padding.only(0,10,0,5),
         alignment=ft.alignment.center
     )
 
     # Other opts
     stats = opt.stats
     lang = opt.lang
+    theme = opt.theme_switch
 
+    stats.label = ui_text['STATS_CHECK'][0]
     stats.value = config_data['stats']
     lang.value = config_data['lang']
+    
+    theme_icon = ft.icons.LIGHT_MODE if config_data['theme'] == "LIGHT" else ft.icons.DARK_MODE
+    theme.icon = theme_icon
+
+    def switch_theme(_event):
+        current_theme = libfango.config_file().theme
+        if current_theme == "DARK":
+            page.theme_mode = themes.LIGHT
+            theme.icon = ft.icons.LIGHT_MODE
+            theme.icon_color = ft.colors.BLACK54
+            libfango.change_theme("LIGHT")
+        elif current_theme == "LIGHT":
+            page.theme_mode = themes.DARK
+            theme.icon = ft.icons.DARK_MODE
+            theme.icon_color = ft.colors.WHITE70
+            libfango.change_theme("DARK")
+        page.update()
+    
+    theme.on_click = switch_theme
 
     misc = ft.Row(
         [
@@ -230,6 +287,7 @@ async def main(page: ft.Page):
                 work,
                 free,
                 long_free,
+                ft.Divider(),
                 misc
             ]
         ),
@@ -238,12 +296,14 @@ async def main(page: ft.Page):
 
     # Appbar items
     save_button = opt.save
+    save_button.text = ui_text['APP_BAR'][1]
 
-    save_button.on_click = lambda _: libfango.save_all(pomodoro, page, work_counter, free_counter, lfree_counter, stats, lang, libfango.THEME['SYSTEM'])
+    save_button.on_click = lambda _: libfango.save_all(pomodoro, page, work_counter, free_counter, lfree_counter, stats, lang, stats_button)
 
     opt_appbar = ft.AppBar(
-        title=ft.Text("Configuracion", weight=ft.FontWeight.BOLD),
+        title=ft.Text(f"{ui_text['APP_BAR'][0]}", weight=ft.FontWeight.BOLD),
         actions=[
+            theme,
             save_button
         ]
     )
@@ -255,7 +315,8 @@ async def main(page: ft.Page):
                 "/",
                 [
                     main_appbar,
-                    timer
+                    timer,
+                    stats_area
                 ],
             )
         )

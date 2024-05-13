@@ -1,21 +1,25 @@
-from ast import List
 import os, json, time, threading
 import flet as ft
 
 from enum import Enum
 from pathlib import Path
+from lib.translations import TRANSLATIONS
 
 # Notification component
-from pkg_resources import working_set
 from plyer import notification
 from pydub.playback import play
 from pydub import AudioSegment
 
 
+
+APP_NAME = "Fang'o timer"
+WINDOW_DIM = {
+    "NORMAL_H": 450,
+    "STATS_H": 500
+}
+
 TIMER = str(os.path.expanduser('~/.fango/timer.json'))
 CONFIG = str(os.path.expanduser('~/.fango/config.json'))
-APP_NAME = "Fang'o timer"
-#ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
 ROOT_DIR = Path(os.path.realpath(__file__)).parent.parent
 ASSETS_DIR = os.path.join(ROOT_DIR, "assets")
 
@@ -142,6 +146,8 @@ def timer(page: ft.Page, clock: ft.Text, progress_bow: ft.ProgressRing, mode_lab
             pomodoro.reset_loop()
             session = 0 # Session number
             n = None # Notification thread variable
+            lang = config_file().lang
+            ui_lang = TRANSLATIONS[lang]
             while True:
                 loop = pomodoro.get_loop()
 
@@ -150,13 +156,14 @@ def timer(page: ft.Page, clock: ft.Text, progress_bow: ft.ProgressRing, mode_lab
                 # Gettinf if current loop is a work loop or a free time loop
                 if loop % 2 == 0:
                     progress_bow.color = ft.colors.GREEN
-                    mode_label.value = f"Descanso: {data['current_timer']} min."
+                    mode_label.value = f"{ui_lang['STAGES_SECTION'][2]}: {data['current_timer']} min."
                 else:
                     progress_bow.color = ft.colors.BLUE
-                    mode_label.value = f"Trabajo"
+                    #mode_label.value = f"Trabajo"
+                    mode_label.value = f"{ui_lang['STAGES_SECTION'][1]}"
                     session += 1
                 
-                loop_label.value = f"Sesión: {session}"
+                loop_label.value = f"{ui_lang['STAGES_SECTION'][0]}: {session}"
 
                 seconds = data['current_timer'] * 60
                 t_seconds = seconds
@@ -194,9 +201,9 @@ def timer(page: ft.Page, clock: ft.Text, progress_bow: ft.ProgressRing, mode_lab
 
 # Config stuff
 THEME = {
-    'LIGHT': 0,
-    'DARK': 1,
-    'SYSTEM': 2
+    'LIGHT': "LIGHT",
+    'DARK': "DARK",
+    'SYSTEM': "SYSTEM"
 }
 
 class config_file():
@@ -284,18 +291,61 @@ def set_option(pomodoro: pomodoro_timer, page: ft.Page, text_field: ft.TextField
         page.snack_bar.open = True
         page.update()
 
-def save_all(pomodoro: pomodoro_timer, page: ft.Page, work: ft.TextField, free: ft.TextField, lfree: ft.TextField, stats: ft.Checkbox, lang: ft.Dropdown, theme):
+def set_stats_interface(page: ft.Page, stats: ft.Checkbox | bool, stats_btn: None | ft.TextButton = None):
+    value = stats.value if not type(stats) == bool else stats
+    if value:
+        #page.window_max_height = WINDOW_DIM['STATS_H']
+        #page.window_min_height = WINDOW_DIM['STATS_H']
+        #page.window_height = WINDOW_DIM['STATS_H']
+        if not stats_btn == None:
+            stats_btn.visible = True
+    else:
+        #page.window_max_height = WINDOW_DIM['NORMAL_H']
+        #page.window_min_height = WINDOW_DIM['NORMAL_H']
+        #page.window_height = WINDOW_DIM['NORMAL_H']
+        if not stats_btn == None:
+            stats_btn.visible = False
+    page.update()
+    print(value)
+
+def change_theme(mode: str):
+    config = config_file()
+    config.set_theme(mode)
+    config.write_conf()
+
+def save_all(pomodoro: pomodoro_timer, page: ft.Page, work: ft.TextField, free: ft.TextField, lfree: ft.TextField, stats: ft.Checkbox, lang: ft.Dropdown, stats_btn: ft.TextButton | None = None):
     set_option(pomodoro, page, work, "work")
     set_option(pomodoro, page, free, "free")
     set_option(pomodoro, page, lfree, "lfree")
 
     config = config_file()
+
+    current_lang = config.lang
+
+    if not lang.value == current_lang:
+        warn = TRANSLATIONS[lang.value] # type: ignore
+        snack = ft.SnackBar(
+            content=ft.Row(
+                [
+                    ft.Icon(
+                        ft.icons.INFO,
+                        color=ft.colors.WHITE
+                    ),
+                    ft.Text(
+                        value=warn['WARNINGS'][0]
+                    ),
+                ]
+            ),
+            bgcolor=ft.colors.BLUE
+        )
+        page.snack_bar = snack
+        page.snack_bar.open = True
+        page.update()
+
     config.set_stats(stats.value) # type: ignore
     config.set_lang(lang.value) # type: ignore
-    config.set_theme(theme)
-
-    print(config)
-    print(f"Stats object: {stats} - Value: {stats.value} - Type: {type(stats.value)}")
-    print(f"Language object: {lang} - Value: {lang.value} - Type: {type(lang.value)}")
 
     config.write_conf()
+    set_stats_interface(page, stats, stats_btn)
+    
+    page.update()
