@@ -6,6 +6,8 @@ import lib.opt as opt
 import lib.themes as themes
 
 from lib.translations import TRANSLATIONS
+from lib.datasets import Config_File
+from lib.datasets import Pomodoro_Timer
 from math import pi
 
 data = {
@@ -17,10 +19,10 @@ data = {
 # Main UI
 async def main(page: ft.Page):
     # Timer
-    pomodoro = libfango.pomodoro_timer()
+    pomodoro = Pomodoro_Timer()
     pomodoro_data = pomodoro.get_pomodoro()
     # Configuration
-    config_data = libfango.config_file().get_conf()
+    config_data = Config_File().get_conf()
 
     # Page setting
     page.title = libfango.APP_NAME
@@ -31,7 +33,8 @@ async def main(page: ft.Page):
     page.window_min_height = 475
     page.window_min_width = 415
     page.window_maximizable = False
-    page.padding = 0
+    #page.padding = 0
+    page.scroll = ft.ScrollMode.ADAPTIVE
 
     if config_data["theme"] == 'LIGHT':
         page.theme_mode = themes.LIGHT
@@ -138,7 +141,7 @@ async def main(page: ft.Page):
     )
 
     def opt_btn_func(_e):
-        pomodoro_data = libfango.pomodoro_timer().get_pomodoro()
+        pomodoro_data = Pomodoro_Timer().get_pomodoro()
         page.go("/conf")
 
     option_button = ft.TextButton(
@@ -257,7 +260,7 @@ async def main(page: ft.Page):
     theme.icon = theme_icon
 
     def switch_theme(_event):
-        current_theme = libfango.config_file().theme
+        current_theme = Config_File().theme
         if current_theme == "DARK":
             page.theme_mode = themes.LIGHT
             theme.icon = ft.icons.LIGHT_MODE

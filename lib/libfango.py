@@ -1,4 +1,4 @@
-import os, json, time, threading
+import os, time, threading
 import flet as ft
 
 from enum import Enum
@@ -10,6 +10,8 @@ from pydub.playback import play
 from pydub import AudioSegment
 
 from lib.translations import TRANSLATIONS
+from lib.datasets import Config_File
+from lib.datasets import Pomodoro_Timer
 
 APP_NAME = "Fang'o timer"
 WINDOW_DIM = {
@@ -51,68 +53,8 @@ def notifier(title:str, message: str):
         print(f"Fang says: {sound} can't be found!")
 
 # Timer stuff
-# Values for timer
-class pomodoro_timer:
-    def __init__(self, work_time: int = 25, free_time: int = 5, long_free_time: int = 15, loop: int = 1):
-        if not os.path.exists(TIMER): # Generate config file
-            self.work_time = work_time
-            self.free_time = free_time
-            self.long_free_time = long_free_time
-            self.loop = loop
-
-            self.dump_config()
-        else: # Load file
-            with open(TIMER, mode='r') as conf:
-                temp = json.load(conf)
-                self.work_time = temp['work']
-                self.free_time = temp['free']
-                self.long_free_time = temp['long_free']
-                self.loop = temp['loop']
-
-    # Get work time
-    def get_wtime(self) -> int:
-        return self.work_time
-    
-    # Get free time
-    def get_ftime(self) -> int:
-        return self.free_time
-    
-    # Get long free time
-    def get_lftime(self) -> int:
-        return self.long_free_time
-    
-    # Get current loop
-    def get_loop(self) -> int:
-        return self.loop
-    
-    # Return a dictionary with the timer attributes
-    def get_pomodoro(self) -> dict:
-        pomodoro = {
-            'work' : self.work_time,
-            'free' : self.free_time,
-            'long_free' : self.long_free_time,
-            'loop' : self.loop
-        }
-
-        return pomodoro
-    
-    def dump_config(self):
-        pomodoro = self.get_pomodoro()
-        # Dump file
-        with open(TIMER, mode='w') as conf:
-            json.dump(pomodoro, fp=conf, indent=4)
-    
-    def reset_loop(self):
-        self.loop = 1
-        self.dump_config()
-    
-    def add_loop(self):
-        self.loop += 1
-        if self.loop == 9:
-            self.loop = 1
-
 # Get Data
-def get_data(pomodoro: pomodoro_timer, loop: int = 1) -> dict:
+def get_data(pomodoro: Pomodoro_Timer, loop: int = 1) -> dict:
     # Reset counter
     if loop == 9:
         loop = 1
@@ -146,17 +88,17 @@ def anim_progress(start: int, end: int, step: int, progress: ft.ProgressRing, pa
 # Use with fang-o.py ui component
 def timer(page: ft.Page, clock: ft.Text, progress_bow: ft.ProgressRing, mode_label: ft.Text, loop_label: ft.Text, breaker: threading.Event):
         try:
-            pomodoro = pomodoro_timer()
+            pomodoro = Pomodoro_Timer()
             pomodoro.reset_loop()
             session = 0 # Session number
             n = None # Notification thread variable
-            lang = config_file().lang
+            lang = Config_File().lang
             ui_lang = TRANSLATIONS[lang]
             while True:
                 loop = pomodoro.get_loop()
 
                 data = get_data(pomodoro, loop)
-                config = config_file()
+                config = Config_File()
 
                 # Gettinf if current loop is a work loop or a free time loop
                 if loop % 2 == 0:
@@ -205,62 +147,8 @@ def timer(page: ft.Page, clock: ft.Text, progress_bow: ft.ProgressRing, mode_lab
             anim_progress(int((pc/2)/100), 101, 1, progress_bow, page)
 
 # Config stuff
-class config_file():
-    def __init__(self):
-        if os.path.exists(CONFIG):
-            with open(CONFIG, 'r') as conf:
-                config = json.load(conf)
-                self.theme = config['theme']
-                self.lang = config['lang']
-                self.stats = config['stats']
-        else:
-            with open(CONFIG, 'w') as conf:
-                config = {
-                    'theme': THEME['LIGHT'],
-                    'lang': 'ES',
-                    'stats': False
-                }
-
-                json.dump(
-                    config,
-                    fp=conf,
-                    indent= 4
-                )
-    
-    # Getters
-    def get_conf(self) -> dict:
-        config = dict()
-        with open(CONFIG, 'r') as conf:
-            config = json.load(conf)
-        return config
-    
-    # Setters
-    def set_theme(self, theme: str):
-        self.theme = theme
-
-    def set_lang(self, lang: str):
-        self.lang = lang
-    
-    def set_stats(self, stats: bool):
-        self.stats = stats
-    
-    # Misc
-    def write_conf(self):
-        with open(CONFIG, 'w') as conf:
-            config = {
-                'theme': self.theme,
-                'lang': self.lang,
-                'stats': self.stats
-            }
-
-            json.dump(
-                config,
-                fp=conf,
-                indent= 4
-            )
-
 # Configuration panel functions
-def set_option(pomodoro: pomodoro_timer, page: ft.Page, text_field: ft.TextField, field_type: str | None):
+def set_option(pomodoro: Pomodoro_Timer, page: ft.Page, text_field: ft.TextField, field_type: str | None):
     try:
         value = int(text_field.value) # type: ignore
         if field_type == "work":
@@ -272,12 +160,12 @@ def set_option(pomodoro: pomodoro_timer, page: ft.Page, text_field: ft.TextField
         page.update()
         pomodoro.dump_config()
     except Exception as _e:
-        config = config_file()
+        config = Config_File()
         lang = config.lang
         warn = TRANSLATIONS[lang]
 
         def undo(_e):
-            pomodoro = pomodoro_timer()
+            pomodoro = Pomodoro_Timer()
             text_field.value = pomodoro.get_wtime() # type: ignore
             page.update()
 
@@ -302,16 +190,16 @@ def set_stats_interface(page: ft.Page, stats: ft.Checkbox | bool, stats_btn: Non
     print(value)
 
 def change_theme(mode: str):
-    config = config_file()
+    config = Config_File()
     config.set_theme(mode)
     config.write_conf()
 
-def save_all(pomodoro: pomodoro_timer, page: ft.Page, work: ft.TextField, free: ft.TextField, lfree: ft.TextField, stats: ft.Checkbox, lang: ft.Dropdown, stats_btn: ft.TextButton | None = None):
+def save_all(pomodoro: Pomodoro_Timer, page: ft.Page, work: ft.TextField, free: ft.TextField, lfree: ft.TextField, stats: ft.Checkbox, lang: ft.Dropdown, stats_btn: ft.TextButton | None = None):
     set_option(pomodoro, page, work, "work")
     set_option(pomodoro, page, free, "free")
     set_option(pomodoro, page, lfree, "lfree")
 
-    config = config_file()
+    config = Config_File()
 
     current_lang = config.lang
 
