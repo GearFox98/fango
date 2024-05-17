@@ -1,6 +1,4 @@
 import os, json
-from sqlite3 import Row
-from typing import Text
 import flet as ft
 import lib.libfango as libfango
 
