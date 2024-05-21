@@ -5,11 +5,12 @@ hiddenimports = []
 hiddenimports += collect_submodules('flet')
 hiddenimports += collect_submodules('dbus-python')
 hiddenimports += collect_submodules('plyer')
+hiddenimports += collect_submodules('pydub')
 
 
 a = Analysis(
     ['fang-o.py'],
-    pathex=['venv/lib/python3.12/site-packages'],
+    pathex=['../../lib/python3.12/site-packages'],
     binaries=[],
     datas=[('assets', 'assets'), ('lib', 'lib')],
     hiddenimports=hiddenimports,
