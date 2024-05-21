@@ -67,8 +67,7 @@ theme = ft.Dropdown(
 )
 
 theme_switch = ft.IconButton(
-    icon=ft.icons.SUNNY,
-    icon_color=ft.colors.BLACK54
+    icon=ft.icons.SUNNY
 )
 
 save = ft.TextButton(

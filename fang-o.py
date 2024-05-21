@@ -8,7 +8,6 @@ import lib.themes as themes
 from lib.translations import TRANSLATIONS
 from lib.datasets import Config_File
 from lib.datasets import Pomodoro_Timer
-from lib.tod import TodoView
 from math import pi
 
 data = {
@@ -272,7 +271,7 @@ async def main(page: ft.Page):
 
     misc = ft.Row(
         [
-            stats,
+            #stats,
             lang
         ],
         alignment=ft.MainAxisAlignment.SPACE_AROUND
@@ -285,7 +284,7 @@ async def main(page: ft.Page):
                 work,
                 free,
                 long_free,
-                ft.Divider(),
+                #ft.Divider(),
                 misc
             ]
         ),

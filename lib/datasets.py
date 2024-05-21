@@ -1,38 +1,7 @@
 import os, json, datetime
 import lib.libfango as libfango
 
-from lib.path import (TIMER, CONFIG, ROOT_DIR, ASSETS_DIR, USER_DIR)
-
-class Task():
-    # Each task has Name, Details, a Deadline and can be Done or not (by default they're not done: False)
-    def __init__(self, name: str, details: str | None = None, deadline: None = None, done: bool = False) -> None:
-        self.name = name
-        self.details = details
-        self.deadline = deadline
-        self.done = done
-    
-    # Returns a dictionary with each attribute (Name, Details, Deadline and Done)
-    def get_task(self) -> dict:
-        task = {
-            'name': self.name,
-            'details': self.details,
-            'deadline': self.deadline,
-            'done': self.done
-        }
-
-        return task
-    
-    # Renames the selected task (Modify Name)
-    def rename(self, name: str):
-        self.name = name
-    
-    # Edits the selected task (Modify Details)
-    def edit(self, details: str):
-        self.details = details
-    
-    # Checks or not the selected task (Modify Done)
-    def check(self, check: bool):
-        self.done = check
+from lib.path import (TIMER, CONFIG, USER_DIR)
 
 # How many times work is done in a day in seconds (Total of working time spent)
 # How many free time is achieved in a day in seconds (Total of free time achieved)

@@ -3,7 +3,6 @@ import flet as ft
 import lib.libfango as libfango
 
 from lib.translations import TRANSLATIONS
-from lib.datasets import Task
 
 class TaskControl(ft.UserControl):
     # Each task has Name, Details, a Deadline and can be Done or not (by default they're not done: False)
