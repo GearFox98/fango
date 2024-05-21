@@ -16,8 +16,8 @@ from lib.path import (TIMER, CONFIG, ROOT_DIR, ASSETS_DIR, USER_DIR)
 
 APP_NAME = "Fang'o timer"
 WINDOW_DIM = {
-    "NORMAL_H": 450,
-    "STATS_H": 500
+    "NORMAL_H": 420,
+    "STATS_H": 475
 }
 
 THEME = {
@@ -177,9 +177,15 @@ def set_stats_interface(page: ft.Page, stats: ft.Checkbox | bool, stats_btn: Non
     value = stats.value if not type(stats) == bool else stats
     if value:
         if not stats_btn == None:
+            page.window_max_height = WINDOW_DIM['STATS_H']
+            page.window_min_height = WINDOW_DIM['STATS_H']
+            page.window_height = WINDOW_DIM['STATS_H']
             stats_btn.visible = True
     else:
         if not stats_btn == None:
+            page.window_max_height = WINDOW_DIM['NORMAL_H']
+            page.window_min_height = WINDOW_DIM['NORMAL_H']
+            page.window_height = WINDOW_DIM['NORMAL_H']
             stats_btn.visible = False
     page.update()
     print(value)

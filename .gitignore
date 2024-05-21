@@ -4,3 +4,4 @@ dist
 api
 test*.py
 run.sh
+lib/tod.py

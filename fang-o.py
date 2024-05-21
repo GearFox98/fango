@@ -157,12 +157,6 @@ async def main(page: ft.Page):
         width=50,
         on_click=opt_btn_func
     )
-
-    todo_button = ft.TextButton(
-        text=f"{ui_text['BUTTONS'][3]}",
-        icon=ft.icons.CHECK,
-        on_click=lambda _: page.go("/todo")
-    )
     
     stats_button = ft.TextButton(
         text=f"{ui_text['BUTTONS'][2]}",    
@@ -172,7 +166,6 @@ async def main(page: ft.Page):
     
     stats_area = ft.Row(
         controls=[
-            todo_button,
             stats_button
         ],
         width=415,
@@ -332,16 +325,6 @@ async def main(page: ft.Page):
                     [
                         opt_appbar,
                         config_form
-                    ],
-                )
-            )
-        if page.route == "/todo":
-            page.views.append(
-                ft.View(
-                    "/todo",
-                    [
-                        ft.AppBar(title=ft.Text(value=ui_text['TODO'][6])),
-                        TodoView(page)
                     ],
                 )
             )

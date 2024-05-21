@@ -10,7 +10,7 @@ TRANSLATIONS = {
         "STATS_CHECK": ["Guardar estadísticas"],
         "WARNINGS": ["Para cargar correctamente el idioma reinicie Fang'o", "Debes insertar valores enteros"],
         "NOTIFICATIONS": ["A trabajar", "Terminó el tiempo de descanso de {0} minutos", "Tiempo de descansar", "Terminó el tiempo de trabajo, hora de descansar"],
-        "TODO": ["¿Qué hay para hoy?", "Todos", "Sin completar", "Completadas", "Perdidas", "", "Tareas"]
+        "TODO": ["¿Qué hay para hoy?", "Todos", "Sin completar", "Completadas", "Perdidas", "Limpiar completadas", "Tareas"]
     },
     "EN": {
         # MAIN VIEW
@@ -23,6 +23,6 @@ TRANSLATIONS = {
         "STATS_CHECK": ["Save time stats"],
         "WARNINGS": ["Restart Fang'o to load correctly the language", "You must write integers only"],
         "NOTIFICATIONS": ["Work time", "{0} minutes free time is over", "Free time", "Work time ended, time to space out"],
-        "TODO": ["What's to queue?", "All", "Undone", "Done", "Lost", "", "To-Do"]
+        "TODO": ["What's to queue?", "All", "Undone", "Done", "Lost", "Clear completed", "To-Do"]
     }
 }
